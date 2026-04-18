@@ -2,6 +2,7 @@ import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  useRouterState,
 } from "@tanstack/react-router";
 import Sidebar from "../components/Sidebar";
 
@@ -26,14 +27,17 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isFullScreen = pathname.startsWith("/s/");
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body className="font-sans antialiased bg-white text-zinc-900">
-        <Sidebar />
-        <main className="ml-60 min-h-screen">{children}</main>
+        {!isFullScreen && <Sidebar />}
+        <main className={isFullScreen ? "" : "ml-60 min-h-screen"}>{children}</main>
         <Scripts />
       </body>
     </html>
