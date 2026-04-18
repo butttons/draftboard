@@ -7,8 +7,8 @@ import {
   updateScreen,
   deleteScreen,
   getConventions,
-  validateScreenName,
 } from "./fs";
+import { validateScreenName } from "./validation";
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
@@ -71,17 +71,10 @@ export function createMcpServer(): McpServer {
           isError: true,
         };
       }
-      try {
-        createScreen(name, html);
-        return {
-          content: [{ type: "text", text: `Screen "${name}" created.` }],
-        };
-      } catch (err) {
-        return {
-          content: [{ type: "text", text: (err as Error).message }],
-          isError: true,
-        };
-      }
+      return createScreen(name, html).match({
+        ok: () => ({ content: [{ type: "text" as const, text: `Screen "${name}" created.` }] }),
+        err: (e) => ({ content: [{ type: "text" as const, text: e.message }], isError: true }),
+      });
     },
   );
 
@@ -96,17 +89,10 @@ export function createMcpServer(): McpServer {
       },
     },
     ({ name, html }) => {
-      try {
-        updateScreen(name, html);
-        return {
-          content: [{ type: "text", text: `Screen "${name}" updated.` }],
-        };
-      } catch (err) {
-        return {
-          content: [{ type: "text", text: (err as Error).message }],
-          isError: true,
-        };
-      }
+      return updateScreen(name, html).match({
+        ok: () => ({ content: [{ type: "text" as const, text: `Screen "${name}" updated.` }] }),
+        err: (e) => ({ content: [{ type: "text" as const, text: e.message }], isError: true }),
+      });
     },
   );
 
@@ -120,17 +106,10 @@ export function createMcpServer(): McpServer {
       },
     },
     ({ name }) => {
-      try {
-        deleteScreen(name);
-        return {
-          content: [{ type: "text", text: `Screen "${name}" deleted.` }],
-        };
-      } catch (err) {
-        return {
-          content: [{ type: "text", text: (err as Error).message }],
-          isError: true,
-        };
-      }
+      return deleteScreen(name).match({
+        ok: () => ({ content: [{ type: "text" as const, text: `Screen "${name}" deleted.` }] }),
+        err: (e) => ({ content: [{ type: "text" as const, text: e.message }], isError: true }),
+      });
     },
   );
 

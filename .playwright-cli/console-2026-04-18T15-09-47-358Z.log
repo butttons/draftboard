@@ -1,0 +1,100 @@
+[     200ms] Error: Module "node:fs" has been externalized for browser compatibility. Cannot access "node:fs.existsSync" in client code.  See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+    at Object.get (http://localhost:3000/@id/__vite-browser-external:node:fs:3:11)
+    at http://localhost:3000/src/server/fs.ts:1:46
+[     371ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   80105ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   81168ms] Error: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SafeFragment fallback={null}>
+      <SafeFragment getResetKey={function getResetKey} errorComponent={function ErrorComponent} ...>
+        <SafeFragment fallback={function fallback}>
+          <MatchInnerImpl matchId="//">
+            <Lazy>
+              <Canvas>
+                <div className="p-6" data-tsd-source="/src/route...">
+                  <h1>
+                  <div className="grid gap-4..." data-tsd-source="/src/route...">
+                    <div className="group rela..." data-tsd-source="/src/route...">
+                      <a data-tsd-source="/src/route..." href="/s/test" ref={{current:null}} onClick={function} ...>
+                        <div>
+                        <div className="p-3 border..." data-tsd-source="/src/route...">
+                          <p>
+                          <p className="flex items..." data-tsd-source="/src/route...">
+                            <Clock>
++                           18 Apr, 22:08
+-                           Apr 18, 10:08 PM
+                      ...
+                    ...
+
+    at throwOnHydrationMismatch (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:2968:51)
+    at completeWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:6421:19)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:851:66)
+    at completeUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8492:15)
+    at performUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8431:23)
+    at workLoopConcurrentByScheduler (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8425:55)
+    at renderRootConcurrent (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8408:64)
+    at performWorkOnRoot (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:7957:145)
+    at performWorkOnRootViaSchedulerTask (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:9059:4)
+    at MessagePort.performWorkUntilDeadline (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:36:38)
+[   81175ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   84021ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[   84113ms] Error: Hydration failed because the server rendered text didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SafeFragment fallback={null}>
+      <SafeFragment getResetKey={function getResetKey} errorComponent={function ErrorComponent} ...>
+        <SafeFragment fallback={function fallback}>
+          <MatchInnerImpl matchId="//">
+            <Lazy>
+              <Canvas>
+                <div className="p-6" data-tsd-source="/src/route...">
+                  <h1>
+                  <div className="grid gap-4..." data-tsd-source="/src/route...">
+                    <div className="group rela..." data-tsd-source="/src/route...">
+                      <a data-tsd-source="/src/route..." href="/s/test" ref={{current:null}} onClick={function} ...>
+                        <div>
+                        <div className="p-3 border..." data-tsd-source="/src/route...">
+                          <p>
+                          <p className="flex items..." data-tsd-source="/src/route...">
+                            <Clock>
++                           18 Apr, 22:08
+-                           Apr 18, 10:08 PM
+                      ...
+                    ...
+
+    at throwOnHydrationMismatch (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:2968:51)
+    at completeWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:6421:19)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:851:66)
+    at completeUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8492:15)
+    at performUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8431:23)
+    at workLoopConcurrentByScheduler (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8425:55)
+    at renderRootConcurrent (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:8408:64)
+    at performWorkOnRoot (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:7957:145)
+    at performWorkOnRootViaSchedulerTask (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:9059:4)
+    at MessagePort.performWorkUntilDeadline (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:36:38)
+[   84120ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  217063ms] [ERROR] Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING @ http://localhost:3000/__tsd/console-pipe/sse:0
+[  217165ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:3000/__tsd/console-pipe:0
+[  219953ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
+[  224214ms] [WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63

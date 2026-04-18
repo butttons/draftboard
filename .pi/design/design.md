@@ -7,7 +7,7 @@
 
 ## Typography
 - Sizes: `text-sm` `text-base` `text-lg` `text-2xl`
-- Headings: semibold, not bold
+- Headings: semibold, not bold, no underline
 - Body: `text-zinc-600`
 
 ## Colors

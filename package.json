@@ -29,6 +29,7 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
+    "better-result": "^2.8.2",
     "chokidar": "^5.0.0",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",

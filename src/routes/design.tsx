@@ -1,62 +1,31 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, Save } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import Editor from "@monaco-editor/react";
+import { designMdQueryOptions } from "#/server/queries";
+import { saveDesignMd } from "#/server/functions";
 
-export const Route = createFileRoute("/design")({ component: DesignEditor });
+export const Route = createFileRoute("/design")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(designMdQueryOptions());
+  },
+  component: DesignEditor,
+});
 
 function DesignEditor() {
-  const [content, setContent] = useState("");
-  const [savedContent, setSavedContent] = useState("");
-  const hasUnsavedChanges = content !== savedContent;
+  const queryClient = useQueryClient();
+  const { data: content = "" } = useQuery(designMdQueryOptions());
+  const [localContent, setLocalContent] = useState(content);
 
-  useEffect(() => {
-    fetch("/api/design")
-      .then((r) => r.json())
-      .then((data) => {
-        setContent(data.content);
-        setSavedContent(data.content);
-      })
-      .catch(console.error);
-  }, []);
+  const hasUnsavedChanges = localContent !== content;
 
-  useEffect(() => {
-    const es = new EventSource("/sse");
-    es.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "design_changed") {
-        fetch("/api/design")
-          .then((r) => r.json())
-          .then((d) => {
-            if (!hasUnsavedChanges) {
-              setContent(d.content);
-              setSavedContent(d.content);
-            }
-          });
-      }
-    };
-    return () => es.close();
-  }, [hasUnsavedChanges]);
-
-  const save = useCallback(async () => {
-    await fetch("/api/design", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
-    setSavedContent(content);
-  }, [content]);
-
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        save();
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [save]);
+  const saveMutation = useMutation({
+    mutationFn: (newContent: string) => saveDesignMd({ data: { content: newContent } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["designMd"] });
+    },
+  });
 
   return (
     <div className="h-screen flex flex-col">
@@ -73,12 +42,12 @@ function DesignEditor() {
             <span className="text-xs text-zinc-400">Unsaved changes</span>
           )}
           <button
-            onClick={save}
-            disabled={!hasUnsavedChanges}
+            onClick={() => saveMutation.mutate(localContent)}
+            disabled={!hasUnsavedChanges || saveMutation.isPending}
             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             <Save size={14} />
-            Save
+            {saveMutation.isPending ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
@@ -86,9 +55,8 @@ function DesignEditor() {
         <Editor
           height="100%"
           defaultLanguage="markdown"
-          value={content}
-          onChange={(value) => setContent(value || "")}
-          onBlur={save}
+          value={localContent}
+          onChange={(value) => setLocalContent(value || "")}
           options={{
             minimap: { enabled: false },
             fontSize: 13,

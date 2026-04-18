@@ -1,65 +1,51 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, Clock } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { screensQueryOptions } from "#/server/queries";
+import { createScreenFn, deleteScreenFn, isValidScreenName } from "#/server/functions";
 
-type Screen = {
-  name: string;
-  path: string;
-  updated_at: string;
-};
-
-export const Route = createFileRoute("/")({ component: Canvas });
+export const Route = createFileRoute("/")({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(screensQueryOptions());
+  },
+  component: Canvas,
+});
 
 function Canvas() {
-  const [screens, setScreens] = useState<Screen[]>([]);
+  const { data: screens = [] } = useQuery(screensQueryOptions());
   const [isCreating, setIsCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchScreens();
-  }, []);
+  const createMutation = useMutation({
+    mutationFn: (name: string) => createScreenFn({ data: { name, html: "" } }),
+    onSuccess: (_, name) => {
+      queryClient.invalidateQueries({ queryKey: ["screens"] });
+      setNewName("");
+      setIsCreating(false);
+      router.navigate({ to: "/s/$name", params: { name } });
+    },
+  });
 
-  useEffect(() => {
-    const es = new EventSource("/sse");
-    es.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "screen_changed") {
-        fetchScreens();
-      }
-    };
-    return () => es.close();
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: (name: string) => deleteScreenFn({ data: { name } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["screens"] });
+    },
+  });
 
-  function fetchScreens() {
-    fetch("/api/screens")
-      .then((r) => r.json())
-      .then(setScreens)
-      .catch(console.error);
-  }
-
-  async function createScreen() {
+  function handleCreate() {
     if (!newName.trim()) return;
     const name = newName.trim().toLowerCase().replace(/\s+/g, "-");
-    await fetch("/api/screens", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, html: "" }),
-    });
-    setNewName("");
-    setIsCreating(false);
-    fetchScreens();
-    router.navigate({ to: "/s/$name", params: { name } });
-  }
-
-  async function deleteScreen(name: string) {
-    await fetch(`/api/screens/${name}`, { method: "DELETE" });
-    fetchScreens();
+    if (!isValidScreenName(name)) return;
+    createMutation.mutate(name);
   }
 
   function formatDate(iso: string) {
     const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   }
 
   return (
@@ -92,7 +78,7 @@ function Canvas() {
             <button
               onClick={(e) => {
                 e.preventDefault();
-                deleteScreen(screen.name);
+                deleteMutation.mutate(screen.name);
               }}
               className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1.5 rounded bg-white/90 shadow-sm hover:bg-red-50 text-zinc-400 hover:text-red-500 transition"
               aria-label={`Delete ${screen.name}`}
@@ -108,7 +94,7 @@ function Canvas() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                createScreen();
+                handleCreate();
               }}
               className="p-4 w-full"
             >
@@ -123,9 +109,10 @@ function Canvas() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700"
+                  disabled={createMutation.isPending}
+                  className="flex-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-40"
                 >
-                  Create
+                  {createMutation.isPending ? "Creating..." : "Create"}
                 </button>
                 <button
                   type="button"
@@ -159,9 +146,6 @@ function Canvas() {
           <h2 className="text-lg font-semibold text-zinc-900 mb-2">No screens yet</h2>
           <p className="text-sm text-zinc-600 mb-4">
             Create your first screen or connect an AI agent via MCP.
-          </p>
-          <p className="text-xs text-zinc-400">
-            MCP endpoint: <code className="bg-zinc-100 px-2 py-0.5 rounded">http://localhost:{window.location.port}/mcp</code>
           </p>
         </div>
       )}

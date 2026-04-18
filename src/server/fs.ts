@@ -1,5 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync, unlinkSync, renameSync } from "node:fs";
-import { join, basename } from "node:path";
+import { join } from "node:path";
+import { Result } from "better-result";
+import { validateScreenName } from "./validation";
 
 const DESIGN_DIR = ".pi/design";
 const SCREENS_DIR = "screens";
@@ -40,12 +42,6 @@ export function scaffoldDesignDir(cwd: string = process.cwd()): void {
   }
 }
 
-export function validateScreenName(name: string): boolean {
-  if (!name || typeof name !== "string") return false;
-  if (name.includes("/") || name.includes("\\") || name.includes("..")) return false;
-  return /^[a-z0-9]+(-[a-z0-9]+)*$/.test(name);
-}
-
 export function listScreens(cwd: string = process.cwd()): Screen[] {
   const screensDir = getScreensDir(cwd);
   if (!existsSync(screensDir)) return [];
@@ -70,52 +66,52 @@ export function getScreen(name: string, cwd: string = process.cwd()): { name: st
   return { name, html: readFileSync(filePath, "utf-8") };
 }
 
-export function createScreen(name: string, html: string, cwd: string = process.cwd()): void {
+export function createScreen(name: string, html: string, cwd: string = process.cwd()): Result<void, Error> {
   if (!validateScreenName(name)) {
-    throw new Error("Invalid screen name. Use kebab-case, no path separators.");
+    return Result.err(new Error("Invalid screen name. Use kebab-case, no path separators."));
   }
   const filePath = join(getScreensDir(cwd), `${name}.html`);
   if (existsSync(filePath)) {
-    throw new Error(`Screen "${name}" already exists.`);
+    return Result.err(new Error(`Screen "${name}" already exists.`));
   }
-  writeFileSync(filePath, html);
+  return Result.try(() => writeFileSync(filePath, html));
 }
 
-export function updateScreen(name: string, html: string, cwd: string = process.cwd()): void {
+export function updateScreen(name: string, html: string, cwd: string = process.cwd()): Result<void, Error> {
   if (!validateScreenName(name)) {
-    throw new Error("Invalid screen name. Use kebab-case, no path separators.");
+    return Result.err(new Error("Invalid screen name. Use kebab-case, no path separators."));
   }
   const filePath = join(getScreensDir(cwd), `${name}.html`);
   if (!existsSync(filePath)) {
-    throw new Error(`Screen "${name}" does not exist.`);
+    return Result.err(new Error(`Screen "${name}" does not exist.`));
   }
-  writeFileSync(filePath, html);
+  return Result.try(() => writeFileSync(filePath, html));
 }
 
-export function deleteScreen(name: string, cwd: string = process.cwd()): void {
+export function deleteScreen(name: string, cwd: string = process.cwd()): Result<void, Error> {
   if (!validateScreenName(name)) {
-    throw new Error("Invalid screen name. Use kebab-case, no path separators.");
+    return Result.err(new Error("Invalid screen name. Use kebab-case, no path separators."));
   }
   const filePath = join(getScreensDir(cwd), `${name}.html`);
   if (!existsSync(filePath)) {
-    throw new Error(`Screen "${name}" does not exist.`);
+    return Result.err(new Error(`Screen "${name}" does not exist.`));
   }
-  unlinkSync(filePath);
+  return Result.try(() => unlinkSync(filePath));
 }
 
-export function renameScreen(oldName: string, newName: string, cwd: string = process.cwd()): void {
+export function renameScreen(oldName: string, newName: string, cwd: string = process.cwd()): Result<void, Error> {
   if (!validateScreenName(oldName) || !validateScreenName(newName)) {
-    throw new Error("Invalid screen name. Use kebab-case, no path separators.");
+    return Result.err(new Error("Invalid screen name. Use kebab-case, no path separators."));
   }
   const oldPath = join(getScreensDir(cwd), `${oldName}.html`);
   const newPath = join(getScreensDir(cwd), `${newName}.html`);
   if (!existsSync(oldPath)) {
-    throw new Error(`Screen "${oldName}" does not exist.`);
+    return Result.err(new Error(`Screen "${oldName}" does not exist.`));
   }
   if (existsSync(newPath)) {
-    throw new Error(`Screen "${newName}" already exists.`);
+    return Result.err(new Error(`Screen "${newName}" already exists.`));
   }
-  renameSync(oldPath, newPath);
+  return Result.try(() => renameSync(oldPath, newPath));
 }
 
 export function getConventions(cwd: string = process.cwd()): string {
@@ -146,14 +142,14 @@ export function getComponentsHtml(cwd: string = process.cwd()): string {
   return readFileSync(filePath, "utf-8");
 }
 
-export function writeDesignMd(content: string, cwd: string = process.cwd()): void {
+export function writeDesignMd(content: string, cwd: string = process.cwd()): Result<void, Error> {
   const filePath = join(getDesignDir(cwd), "design.md");
-  writeFileSync(filePath, content);
+  return Result.try(() => writeFileSync(filePath, content));
 }
 
-export function writeComponentsHtml(content: string, cwd: string = process.cwd()): void {
+export function writeComponentsHtml(content: string, cwd: string = process.cwd()): Result<void, Error> {
   const filePath = join(getDesignDir(cwd), "components.html");
-  writeFileSync(filePath, content);
+  return Result.try(() => writeFileSync(filePath, content));
 }
 
 export function getDesignFilePath(cwd: string = process.cwd()): string {

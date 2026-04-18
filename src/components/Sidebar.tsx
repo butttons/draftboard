@@ -1,43 +1,20 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FileCode2, LayoutGrid, Palette, Component, Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
-
-type Screen = {
-  name: string;
-  path: string;
-  updated_at: string;
-};
+import { screensQueryOptions } from "#/server/queries";
+import { deleteScreenFn } from "#/server/functions";
 
 export default function Sidebar() {
-  const [screens, setScreens] = useState<Screen[]>([]);
+  const { data: screens = [] } = useQuery(screensQueryOptions());
+  const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  useEffect(() => {
-    fetchScreens();
-  }, []);
-
-  useEffect(() => {
-    const es = new EventSource("/sse");
-    es.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "screen_changed") {
-        fetchScreens();
-      }
-    };
-    return () => es.close();
-  }, []);
-
-  function fetchScreens() {
-    fetch("/api/screens")
-      .then((r) => r.json())
-      .then(setScreens)
-      .catch(console.error);
-  }
-
-  async function deleteScreen(name: string) {
-    await fetch(`/api/screens/${name}`, { method: "DELETE" });
-    fetchScreens();
-  }
+  const deleteMutation = useMutation({
+    mutationFn: (name: string) => deleteScreenFn({ data: { name } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["screens"] });
+    },
+  });
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 border-r border-zinc-200 bg-zinc-50 flex flex-col">
@@ -96,7 +73,7 @@ export default function Sidebar() {
               <span className="truncate">{screen.name}</span>
             </Link>
             <button
-              onClick={() => deleteScreen(screen.name)}
+              onClick={() => deleteMutation.mutate(screen.name)}
               className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-zinc-200 text-zinc-400 hover:text-red-500 transition"
               aria-label={`Delete ${screen.name}`}
             >

@@ -1,0 +1,8 @@
+Total messages: 5 (Errors: 1, Warnings: 1)
+Returning 3 messages for level "info"
+
+[INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=835faddc:14337
+Error: Module "node:fs" has been externalized for browser compatibility. Cannot access "node:fs.existsSync" in client code.  See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+    at Object.get (http://localhost:3000/@id/__vite-browser-external:node:fs:3:11)
+    at http://localhost:3000/src/server/fs.ts:1:46
+[WARNING] cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation @ https://cdn.tailwindcss.com/:63
