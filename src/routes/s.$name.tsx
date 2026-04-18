@@ -1,8 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { DndContext, useDraggable } from "@dnd-kit/core";
-import type { DragEndEvent } from "@dnd-kit/core";
-import { ChevronLeft, Trash2, Save, Code2, GripVertical, Minus, Plus } from "lucide-react";
+import { ChevronLeft, Trash2, Save, Code2 } from "lucide-react";
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { screenQueryOptions } from "#/server/queries";
 import { updateScreenFn, deleteScreenFn, renameScreenFn } from "#/server/functions";
@@ -16,35 +14,6 @@ export const Route = createFileRoute("/s/$name")({
   component: ScreenEditor,
 });
 
-function DraggableToolbar({ children, position, setPosition }: {
-  children: React.ReactNode;
-  position: { x: number; y: number };
-  setPosition: (pos: { x: number; y: number }) => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: "toolbar",
-  });
-
-  const style = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-    left: position.x,
-    top: position.y,
-  };
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={`fixed flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-lg shadow-sm select-none ${isDragging ? "shadow-lg opacity-90" : ""}`}
-    >
-      <div {...attributes} {...listeners} className="pl-2 py-2 text-zinc-300 cursor-grab active:cursor-grabbing">
-        <GripVertical size={16} />
-      </div>
-      {children}
-    </div>
-  );
-}
-
 function ScreenEditor() {
   const { name } = Route.useParams();
   const router = useRouter();
@@ -56,14 +25,6 @@ function ScreenEditor() {
   const [showEditor, setShowEditor] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(name);
-  const [minimized, setMinimized] = useState(false);
-  const [position, setPosition] = useState(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("toolbar-position");
-      if (saved) return JSON.parse(saved);
-    }
-    return { x: 16, y: 16 };
-  });
 
   const hasUnsavedChanges = html !== savedHtml;
 
@@ -73,10 +34,6 @@ function ScreenEditor() {
       setSavedHtml(screen.html);
     }
   }, [screen?.html]);
-
-  useEffect(() => {
-    localStorage.setItem("toolbar-position", JSON.stringify(position));
-  }, [position]);
 
   const saveMutation = useMutation({
     mutationFn: (content: string) => updateScreenFn({ data: { name, html: content } }),
@@ -118,15 +75,6 @@ function ScreenEditor() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [save]);
 
-  function handleDragEnd(event: DragEndEvent) {
-    if (event.delta) {
-      setPosition(prev => ({
-        x: Math.max(0, Math.min(window.innerWidth - 200, prev.x + event.delta.x)),
-        y: Math.max(0, Math.min(window.innerHeight - 48, prev.y + event.delta.y)),
-      }));
-    }
-  }
-
   function handleRename() {
     if (!newName.trim() || newName === name) {
       setIsRenaming(false);
@@ -137,115 +85,90 @@ function ScreenEditor() {
   }
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
-      <div className="h-screen w-screen relative">
-        {/* Full-screen preview */}
+    <div className="h-screen flex flex-col">
+      {/* Top bar */}
+      <div className="h-10 bg-white border-b border-zinc-200 flex items-center gap-2 px-3 flex-shrink-0">
+        <Link
+          to="/"
+          className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
+          title="Back to canvas"
+        >
+          <ChevronLeft size={18} />
+        </Link>
+
+        <div className="w-px h-5 bg-zinc-200" />
+
+        {isRenaming ? (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRename();
+            }}
+          >
+            <input
+              type="text"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              autoFocus
+              className="border border-zinc-200 rounded px-2 py-0.5 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onBlur={handleRename}
+            />
+          </form>
+        ) : (
+          <button
+            onClick={() => setIsRenaming(true)}
+            className="text-sm font-medium text-zinc-900 hover:text-blue-600 transition bg-transparent border-0 cursor-pointer"
+          >
+            {name}
+          </button>
+        )}
+
+        <div className="flex-1" />
+
+        {hasUnsavedChanges && (
+          <span className="text-xs text-zinc-400">unsaved</span>
+        )}
+
+        <button
+          onClick={() => setShowEditor(!showEditor)}
+          className={`p-1.5 rounded transition ${
+            showEditor ? "bg-blue-100 text-blue-600" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700"
+          }`}
+          title="Toggle editor"
+        >
+          <Code2 size={18} />
+        </button>
+
+        <button
+          onClick={save}
+          disabled={!hasUnsavedChanges || saveMutation.isPending}
+          className="flex items-center gap-1 px-2.5 py-1 rounded text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+        >
+          <Save size={14} />
+          {saveMutation.isPending ? "..." : "Save"}
+        </button>
+
+        <button
+          onClick={() => deleteMutation.mutate()}
+          disabled={deleteMutation.isPending}
+          className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition"
+          title="Delete screen"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+
+      {/* Preview */}
+      <div className="flex-1 relative">
         <iframe
           src={`/preview/${name}`}
           className="w-full h-full border-0"
           title={`Preview of ${name}`}
         />
 
-        {/* Floating toolbar */}
-        {minimized ? (
-          <div
-            className="fixed bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-lg shadow-sm"
-            style={{ left: position.x, top: position.y }}
-          >
-            <button
-              onClick={() => setMinimized(false)}
-              className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
-              title="Expand toolbar"
-            >
-              <Plus size={18} />
-            </button>
-          </div>
-        ) : (
-          <DraggableToolbar position={position} setPosition={setPosition}>
-            <Link
-              to="/"
-              className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
-              title="Back to canvas"
-            >
-              <ChevronLeft size={18} />
-            </Link>
-
-            <div className="w-px h-5 bg-zinc-200" />
-
-            {isRenaming ? (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleRename();
-                }}
-              >
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  autoFocus
-                  className="border border-zinc-200 rounded px-2 py-0.5 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  onBlur={handleRename}
-                />
-              </form>
-            ) : (
-              <button
-                onClick={() => setIsRenaming(true)}
-                className="text-sm font-medium text-zinc-900 hover:text-blue-600 transition bg-transparent border-0 cursor-pointer"
-              >
-                {name}
-              </button>
-            )}
-
-            <div className="w-px h-5 bg-zinc-200" />
-
-            <button
-              onClick={() => setShowEditor(!showEditor)}
-              className={`p-1.5 rounded transition ${
-                showEditor ? "bg-blue-100 text-blue-600" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700"
-              }`}
-              title="Toggle editor"
-            >
-              <Code2 size={18} />
-            </button>
-
-            <button
-              onClick={save}
-              disabled={!hasUnsavedChanges || saveMutation.isPending}
-              className="flex items-center gap-1 px-2.5 py-1 rounded text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
-            >
-              <Save size={14} />
-              {saveMutation.isPending ? "..." : "Save"}
-            </button>
-
-            <button
-              onClick={() => deleteMutation.mutate()}
-              disabled={deleteMutation.isPending}
-              className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition"
-              title="Delete screen"
-            >
-              <Trash2 size={18} />
-            </button>
-
-            {hasUnsavedChanges && (
-              <span className="text-xs text-zinc-400 mr-1">unsaved</span>
-            )}
-
-            <div className="w-px h-5 bg-zinc-200" />
-
-            <button
-              onClick={() => setMinimized(true)}
-              className="p-1.5 pr-2 rounded hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition"
-              title="Minimize"
-            >
-              <Minus size={16} />
-            </button>
-          </DraggableToolbar>
-        )}
-
-        {/* Editor panel */}
+        {/* Editor panel overlay */}
         {showEditor && (
-          <div className="fixed top-16 left-4 bottom-4 w-[480px] bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden">
+          <div className="absolute top-0 right-0 bottom-0 w-[480px] bg-white border-l border-zinc-200 shadow-lg overflow-hidden z-10">
             <Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-400">Loading editor...</div>}>
               <Editor
                 height="100%"
@@ -267,6 +190,6 @@ function ScreenEditor() {
           </div>
         )}
       </div>
-    </DndContext>
+    </div>
   );
 }
