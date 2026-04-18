@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { DndContext, useDraggable } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
 import { ChevronLeft, Trash2, Save, Code2, GripVertical, Minus, Plus } from "lucide-react";
-import { useState, useCallback, useEffect, lazy, Suspense, useRef } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { screenQueryOptions } from "#/server/queries";
 import { updateScreenFn, deleteScreenFn, renameScreenFn } from "#/server/functions";
 
@@ -13,6 +15,35 @@ export const Route = createFileRoute("/s/$name")({
   },
   component: ScreenEditor,
 });
+
+function DraggableToolbar({ children, position, setPosition }: {
+  children: React.ReactNode;
+  position: { x: number; y: number };
+  setPosition: (pos: { x: number; y: number }) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: "toolbar",
+  });
+
+  const style = {
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    left: position.x,
+    top: position.y,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`fixed flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-lg shadow-sm select-none ${isDragging ? "shadow-lg opacity-90" : ""}`}
+    >
+      <div {...attributes} {...listeners} className="pl-2 py-2 text-zinc-300 cursor-grab active:cursor-grabbing">
+        <GripVertical size={16} />
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function ScreenEditor() {
   const { name } = Route.useParams();
@@ -33,9 +64,6 @@ function ScreenEditor() {
     }
     return { x: 16, y: 16 };
   });
-  const isDragging = useRef(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
-  const toolbarRef = useRef<HTMLDivElement>(null);
 
   const hasUnsavedChanges = html !== savedHtml;
 
@@ -90,28 +118,13 @@ function ScreenEditor() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [save]);
 
-  function handleMouseDown(e: React.MouseEvent) {
-    if ((e.target as HTMLElement).closest("button, input, a")) return;
-    isDragging.current = true;
-    dragOffset.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    };
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-  }
-
-  function handleMouseMove(e: MouseEvent) {
-    if (!isDragging.current) return;
-    const newX = Math.max(0, Math.min(window.innerWidth - 200, e.clientX - dragOffset.current.x));
-    const newY = Math.max(0, Math.min(window.innerHeight - 48, e.clientY - dragOffset.current.y));
-    setPosition({ x: newX, y: newY });
-  }
-
-  function handleMouseUp() {
-    isDragging.current = false;
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.removeEventListener("mouseup", handleMouseUp);
+  function handleDragEnd(event: DragEndEvent) {
+    if (event.delta) {
+      setPosition(prev => ({
+        x: Math.max(0, Math.min(window.innerWidth - 200, prev.x + event.delta.x)),
+        y: Math.max(0, Math.min(window.innerHeight - 48, prev.y + event.delta.y)),
+      }));
+    }
   }
 
   function handleRename() {
@@ -124,37 +137,31 @@ function ScreenEditor() {
   }
 
   return (
-    <div className="h-screen w-screen relative">
-      {/* Full-screen preview */}
-      <iframe
-        src={`/preview/${name}`}
-        className="w-full h-full border-0"
-        title={`Preview of ${name}`}
-      />
+    <DndContext onDragEnd={handleDragEnd}>
+      <div className="h-screen w-screen relative">
+        {/* Full-screen preview */}
+        <iframe
+          src={`/preview/${name}`}
+          className="w-full h-full border-0"
+          title={`Preview of ${name}`}
+        />
 
-      {/* Floating toolbar */}
-      <div
-        ref={toolbarRef}
-        onMouseDown={handleMouseDown}
-        className="fixed flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-lg shadow-sm select-none"
-        style={{ left: position.x, top: position.y, cursor: isDragging.current ? "grabbing" : "grab" }}
-      >
+        {/* Floating toolbar */}
         {minimized ? (
-          /* Minimized state */
-          <button
-            onClick={() => setMinimized(false)}
-            className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
-            title="Expand toolbar"
+          <div
+            className="fixed bg-white/90 backdrop-blur-sm border border-zinc-200 rounded-lg shadow-sm"
+            style={{ left: position.x, top: position.y }}
           >
-            <Plus size={18} />
-          </button>
+            <button
+              onClick={() => setMinimized(false)}
+              className="p-2 rounded-lg hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
+              title="Expand toolbar"
+            >
+              <Plus size={18} />
+            </button>
+          </div>
         ) : (
-          /* Expanded state */
-          <>
-            <div className="pl-2 py-2 text-zinc-300 cursor-grab">
-              <GripVertical size={16} />
-            </div>
-
+          <DraggableToolbar position={position} setPosition={setPosition}>
             <Link
               to="/"
               className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
@@ -171,7 +178,6 @@ function ScreenEditor() {
                   e.preventDefault();
                   handleRename();
                 }}
-                onMouseDown={(e) => e.stopPropagation()}
               >
                 <input
                   type="text"
@@ -234,33 +240,33 @@ function ScreenEditor() {
             >
               <Minus size={16} />
             </button>
-          </>
+          </DraggableToolbar>
+        )}
+
+        {/* Editor panel */}
+        {showEditor && (
+          <div className="fixed top-16 left-4 bottom-4 w-[480px] bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden">
+            <Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-400">Loading editor...</div>}>
+              <Editor
+                height="100%"
+                defaultLanguage="html"
+                value={html}
+                onChange={(value) => setHtml(value || "")}
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 13,
+                  lineNumbers: "on",
+                  wordWrap: "on",
+                  padding: { top: 12 },
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                }}
+                theme="vs"
+              />
+            </Suspense>
+          </div>
         )}
       </div>
-
-      {/* Editor panel */}
-      {showEditor && (
-        <div className="fixed top-16 left-4 bottom-4 w-[480px] bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden">
-          <Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-400">Loading editor...</div>}>
-            <Editor
-              height="100%"
-              defaultLanguage="html"
-              value={html}
-              onChange={(value) => setHtml(value || "")}
-              options={{
-                minimap: { enabled: false },
-                fontSize: 13,
-                lineNumbers: "on",
-                wordWrap: "on",
-                padding: { top: 12 },
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-              }}
-              theme="vs"
-            />
-          </Suspense>
-        </div>
-      )}
-    </div>
+    </DndContext>
   );
 }
