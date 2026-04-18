@@ -9,18 +9,36 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SseRouteImport } from './routes/sse'
 import { Route as McpRouteImport } from './routes/mcp'
-import { Route as AboutRouteImport } from './routes/about'
+import { Route as DesignRouteImport } from './routes/design'
+import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SNameRouteImport } from './routes/s.$name'
+import { Route as PreviewNameRouteImport } from './routes/preview.$name'
+import { Route as ApiScreensRouteImport } from './routes/api.screens'
+import { Route as ApiDesignRouteImport } from './routes/api.design'
+import { Route as ApiComponentsRouteImport } from './routes/api.components'
+import { Route as ApiScreensNameRouteImport } from './routes/api.screens.$name'
 
+const SseRoute = SseRouteImport.update({
+  id: '/sse',
+  path: '/sse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AboutRoute = AboutRouteImport.update({
-  id: '/about',
-  path: '/about',
+const DesignRoute = DesignRouteImport.update({
+  id: '/design',
+  path: '/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComponentsRoute = ComponentsRouteImport.update({
+  id: '/components',
+  path: '/components',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -28,39 +46,141 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SNameRoute = SNameRouteImport.update({
+  id: '/s/$name',
+  path: '/s/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewNameRoute = PreviewNameRouteImport.update({
+  id: '/preview/$name',
+  path: '/preview/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiScreensRoute = ApiScreensRouteImport.update({
+  id: '/api/screens',
+  path: '/api/screens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiDesignRoute = ApiDesignRouteImport.update({
+  id: '/api/design',
+  path: '/api/design',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiComponentsRoute = ApiComponentsRouteImport.update({
+  id: '/api/components',
+  path: '/api/components',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiScreensNameRoute = ApiScreensNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => ApiScreensRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/components': typeof ComponentsRoute
+  '/design': typeof DesignRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
+  '/api/components': typeof ApiComponentsRoute
+  '/api/design': typeof ApiDesignRoute
+  '/api/screens': typeof ApiScreensRouteWithChildren
+  '/preview/$name': typeof PreviewNameRoute
+  '/s/$name': typeof SNameRoute
+  '/api/screens/$name': typeof ApiScreensNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/components': typeof ComponentsRoute
+  '/design': typeof DesignRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
+  '/api/components': typeof ApiComponentsRoute
+  '/api/design': typeof ApiDesignRoute
+  '/api/screens': typeof ApiScreensRouteWithChildren
+  '/preview/$name': typeof PreviewNameRoute
+  '/s/$name': typeof SNameRoute
+  '/api/screens/$name': typeof ApiScreensNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/components': typeof ComponentsRoute
+  '/design': typeof DesignRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
+  '/api/components': typeof ApiComponentsRoute
+  '/api/design': typeof ApiDesignRoute
+  '/api/screens': typeof ApiScreensRouteWithChildren
+  '/preview/$name': typeof PreviewNameRoute
+  '/s/$name': typeof SNameRoute
+  '/api/screens/$name': typeof ApiScreensNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/mcp'
+  fullPaths:
+    | '/'
+    | '/components'
+    | '/design'
+    | '/mcp'
+    | '/sse'
+    | '/api/components'
+    | '/api/design'
+    | '/api/screens'
+    | '/preview/$name'
+    | '/s/$name'
+    | '/api/screens/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/mcp'
-  id: '__root__' | '/' | '/about' | '/mcp'
+  to:
+    | '/'
+    | '/components'
+    | '/design'
+    | '/mcp'
+    | '/sse'
+    | '/api/components'
+    | '/api/design'
+    | '/api/screens'
+    | '/preview/$name'
+    | '/s/$name'
+    | '/api/screens/$name'
+  id:
+    | '__root__'
+    | '/'
+    | '/components'
+    | '/design'
+    | '/mcp'
+    | '/sse'
+    | '/api/components'
+    | '/api/design'
+    | '/api/screens'
+    | '/preview/$name'
+    | '/s/$name'
+    | '/api/screens/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  ComponentsRoute: typeof ComponentsRoute
+  DesignRoute: typeof DesignRoute
   McpRoute: typeof McpRoute
+  SseRoute: typeof SseRoute
+  ApiComponentsRoute: typeof ApiComponentsRoute
+  ApiDesignRoute: typeof ApiDesignRoute
+  ApiScreensRoute: typeof ApiScreensRouteWithChildren
+  PreviewNameRoute: typeof PreviewNameRoute
+  SNameRoute: typeof SNameRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sse': {
+      id: '/sse'
+      path: '/sse'
+      fullPath: '/sse'
+      preLoaderRoute: typeof SseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -68,11 +188,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutRouteImport
+    '/design': {
+      id: '/design'
+      path: '/design'
+      fullPath: '/design'
+      preLoaderRoute: typeof DesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/components': {
+      id: '/components'
+      path: '/components'
+      fullPath: '/components'
+      preLoaderRoute: typeof ComponentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -82,13 +209,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/s/$name': {
+      id: '/s/$name'
+      path: '/s/$name'
+      fullPath: '/s/$name'
+      preLoaderRoute: typeof SNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview/$name': {
+      id: '/preview/$name'
+      path: '/preview/$name'
+      fullPath: '/preview/$name'
+      preLoaderRoute: typeof PreviewNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/screens': {
+      id: '/api/screens'
+      path: '/api/screens'
+      fullPath: '/api/screens'
+      preLoaderRoute: typeof ApiScreensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/design': {
+      id: '/api/design'
+      path: '/api/design'
+      fullPath: '/api/design'
+      preLoaderRoute: typeof ApiDesignRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/components': {
+      id: '/api/components'
+      path: '/api/components'
+      fullPath: '/api/components'
+      preLoaderRoute: typeof ApiComponentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/screens/$name': {
+      id: '/api/screens/$name'
+      path: '/$name'
+      fullPath: '/api/screens/$name'
+      preLoaderRoute: typeof ApiScreensNameRouteImport
+      parentRoute: typeof ApiScreensRoute
+    }
   }
 }
 
+interface ApiScreensRouteChildren {
+  ApiScreensNameRoute: typeof ApiScreensNameRoute
+}
+
+const ApiScreensRouteChildren: ApiScreensRouteChildren = {
+  ApiScreensNameRoute: ApiScreensNameRoute,
+}
+
+const ApiScreensRouteWithChildren = ApiScreensRoute._addFileChildren(
+  ApiScreensRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  ComponentsRoute: ComponentsRoute,
+  DesignRoute: DesignRoute,
   McpRoute: McpRoute,
+  SseRoute: SseRoute,
+  ApiComponentsRoute: ApiComponentsRoute,
+  ApiDesignRoute: ApiDesignRoute,
+  ApiScreensRoute: ApiScreensRouteWithChildren,
+  PreviewNameRoute: PreviewNameRoute,
+  SNameRoute: SNameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

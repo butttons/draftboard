@@ -2,6 +2,9 @@
   "name": "pi-design",
   "private": true,
   "type": "module",
+  "bin": {
+    "pi-design": "./bin/pi-design.ts"
+  },
   "imports": {
     "#/*": "./src/*"
   },
@@ -16,6 +19,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "@monaco-editor/react": "^4.7.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/react-devtools": "latest",
     "@tanstack/react-query": "latest",
@@ -25,6 +29,7 @@
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
     "@tanstack/router-plugin": "^1.132.0",
+    "chokidar": "^5.0.0",
     "lucide-react": "^0.545.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
