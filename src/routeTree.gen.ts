@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SseRouteImport } from './routes/sse'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LayoutRouteImport } from './routes/layout'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as DesignRouteImport } from './routes/design'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as IndexRouteImport } from './routes/index'
@@ -33,6 +34,11 @@ const McpRoute = McpRouteImport.update({
 const LayoutRoute = LayoutRouteImport.update({
   id: '/layout',
   path: '/layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesignRoute = DesignRouteImport.update({
@@ -75,6 +81,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/help': typeof HelpRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/help': typeof HelpRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/help': typeof HelpRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
@@ -114,6 +123,7 @@ export interface FileRouteTypes {
     | '/'
     | '/components'
     | '/design'
+    | '/help'
     | '/layout'
     | '/mcp'
     | '/sse'
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/'
     | '/components'
     | '/design'
+    | '/help'
     | '/layout'
     | '/mcp'
     | '/sse'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/'
     | '/components'
     | '/design'
+    | '/help'
     | '/layout'
     | '/mcp'
     | '/sse'
@@ -151,6 +163,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ComponentsRoute: typeof ComponentsRoute
   DesignRoute: typeof DesignRoute
+  HelpRoute: typeof HelpRoute
   LayoutRoute: typeof LayoutRoute
   McpRoute: typeof McpRoute
   SseRoute: typeof SseRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/layout'
       fullPath: '/layout'
       preLoaderRoute: typeof LayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/design': {
@@ -239,6 +259,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ComponentsRoute: ComponentsRoute,
   DesignRoute: DesignRoute,
+  HelpRoute: HelpRoute,
   LayoutRoute: LayoutRoute,
   McpRoute: McpRoute,
   SseRoute: SseRoute,

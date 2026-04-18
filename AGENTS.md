@@ -1,6 +1,6 @@
-# pi-design
+# @butttons/design
 
-Local wireframing tool. Runs as `bunx pi-design` in a project folder. Reads/writes `.pi/design/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
+Local wireframing tool. Runs as `bunx @butttons/design` in a project folder. Reads/writes `.pi/design/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
 
 ## Project structure in user's folder
 
@@ -63,7 +63,7 @@ When the MCP (or the user's editor, or git) writes a file in `.pi/design/`, chok
 
 ## CLI entry
 
-`bin/pi-design.ts`:
+`bin/@butttons/design.ts`:
 
 - Parses optional `[dir]` arg (defaults to `process.cwd()`)
 - Finds a free port (default 4321, fall back if taken)
@@ -117,7 +117,7 @@ Ship ~10 canonical blocks: button (primary/secondary), input, card, nav bar, emp
 
 ## Long-term constraints
 
-- Ship as a single npm package. `bunx pi-design` must work with zero config.
+- Ship as a single npm package. `bunx @butttons/design` must work with zero config.
 - The MCP tool schema is the stable public API. Treat changes to it like breaking API changes.
 - Never store state that isn't recoverable from the files in `.pi/design/`. If the process dies or the npm package is uninstalled, the user's work is untouched and openable in any editor.
 - Keep dependencies minimal. Every added dep is future maintenance.

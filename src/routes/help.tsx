@@ -1,0 +1,206 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ChevronRight } from "lucide-react";
+
+export const Route = createFileRoute("/help")({
+  component: Help,
+});
+
+function Help() {
+  return (
+    <div className="min-h-screen">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 bg-white text-sm">
+        <Link to="/" className="text-zinc-400 hover:text-zinc-600 no-underline">
+          Canvas
+        </Link>
+        <ChevronRight size={14} className="text-zinc-300" />
+        <span className="text-zinc-900 font-medium">Help</span>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-8 py-10 space-y-10">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
+            How to use @butttons/design
+          </h1>
+          <p className="text-sm text-zinc-600">
+            A local wireframing tool. Your files live in{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              .pi/design/
+            </code>{" "}
+            in the folder where you ran the CLI. Edit them here, in your IDE,
+            or via an AI agent through MCP. All three stay in sync.
+          </p>
+        </header>
+
+        <Section title="The sidebar">
+          <Item label="Canvas">
+            Grid of all your screens with live previews. Click a screen to edit
+            it, or use the "New screen" card to create one.
+          </Item>
+          <Item label="Design">
+            Edit{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              design.md
+            </code>
+            . Conventions agents read before generating screens: spacing, type,
+            colors, rules.
+          </Item>
+          <Item label="Components">
+            Edit{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              components.html
+            </code>
+            . Canonical blocks (button, card, nav, etc.) that agents reuse.
+          </Item>
+          <Item label="Layout">
+            Edit the HTML shell that wraps every preview (Tailwind CDN, icon
+            libs, resets). Applied at serve time, never written into your
+            screen files.
+          </Item>
+          <Item label="Screens">
+            Every file in{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              .pi/design/screens/
+            </code>
+            . Hover a screen to reveal the delete button.
+          </Item>
+        </Section>
+
+        <Section title="Editing a screen">
+          <p className="text-sm text-zinc-600">
+            The editor is split: Monaco on the left, live iframe preview on the
+            right. Drag the divider to resize; your ratio is remembered.
+          </p>
+          <ul className="text-sm text-zinc-600 space-y-1 list-disc pl-5">
+            <li>
+              <strong className="text-zinc-900">Auto-save</strong> on blur and{" "}
+              <kbd className="px-1.5 py-0.5 rounded border border-zinc-200 bg-zinc-50 text-xs">
+                Cmd+S
+              </kbd>
+              .
+            </li>
+            <li>
+              <strong className="text-zinc-900">Rename</strong> by clicking the
+              screen name in the top bar.
+            </li>
+            <li>
+              <strong className="text-zinc-900">External changes</strong> (from
+              an agent or your IDE) reload the preview automatically. If you
+              have unsaved edits, you'll see a "reload?" banner.
+            </li>
+            <li>
+              Open a screen in a clean window at{" "}
+              <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+                /p/&lt;screen-name&gt;
+              </code>
+              .
+            </li>
+          </ul>
+        </Section>
+
+        <Section title="Connecting an AI agent">
+          <p className="text-sm text-zinc-600">
+            The app exposes an MCP server at{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              /mcp
+            </code>
+            . Add it to your agent's MCP config:
+          </p>
+          <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
+{`{
+  "mcpServers": {
+    "design": { "url": "http://localhost:<port>/mcp" }
+  }
+}`}
+          </pre>
+          <p className="text-sm text-zinc-600">
+            The CLI prints the exact snippet for the current port when it
+            starts. Tools available to the agent:{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              list_screens
+            </code>
+            ,{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              get_screen
+            </code>
+            ,{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              create_screen
+            </code>
+            ,{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              update_screen
+            </code>
+            ,{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              delete_screen
+            </code>
+            ,{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
+              get_conventions
+            </code>
+            .
+          </p>
+        </Section>
+
+        <Section title="CLI">
+          <p className="text-sm text-zinc-600">Run in any project folder:</p>
+          <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
+{`bunx @butttons/design              # auto-pick a free port starting at 4321
+bunx @butttons/design --port 5005  # pin a port
+PORT=5005 bunx @butttons/design    # or via env var
+bunx @butttons/design --open       # open the browser on start`}
+          </pre>
+        </Section>
+
+        <Section title="Where your work lives">
+          <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
+{`<your-project>/
+└── .pi/
+    └── design/
+        ├── design.md
+        ├── components.html
+        ├── layout.html
+        └── screens/
+            └── *.html`}
+          </pre>
+          <p className="text-sm text-zinc-600">
+            Plain files. No database. Commit them to git, open them in any
+            editor, delete the package any time — your work is untouched.
+          </p>
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold tracking-tight text-zinc-950">
+        {title}
+      </h2>
+      <div className="space-y-3">{children}</div>
+    </section>
+  );
+}
+
+function Item({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border border-zinc-200 rounded-lg p-4 bg-white">
+      <div className="text-sm font-medium text-zinc-900 mb-1">{label}</div>
+      <div className="text-sm text-zinc-600">{children}</div>
+    </div>
+  );
+}

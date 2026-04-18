@@ -20,7 +20,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "pi-design" },
+      { title: "@butttons/design" },
     ],
     links: [{ rel: "stylesheet", href: appCss }],
   }),
@@ -39,7 +39,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-mono antialiased bg-white text-zinc-950">
         {!isFullScreen && <Sidebar />}
-        <main className={isFullScreen ? "" : "ml-60 min-h-screen"}>{children}</main>
+        <main className={isFullScreen ? "" : "ml-60 min-h-screen"}>
+          {children}
+        </main>
         <Scripts />
       </body>
     </html>

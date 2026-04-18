@@ -1,5 +1,5 @@
 {
-  "projectName": "pi-design",
+  "projectName": "@butttons/design",
   "mode": "file-router",
   "typescript": true,
   "packageManager": "npm",
@@ -11,9 +11,5 @@
   "routerOnly": false,
   "version": 1,
   "framework": "react",
-  "chosenAddOns": [
-    "biome",
-    "mcp",
-    "tanstack-query"
-  ]
+  "chosenAddOns": ["biome", "mcp", "tanstack-query"]
 }

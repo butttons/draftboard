@@ -1,6 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileCode2, LayoutGrid, Palette, Component, Trash2, Layers } from "lucide-react";
+import {
+  FileCode2,
+  LayoutGrid,
+  Palette,
+  Component,
+  Trash2,
+  Layers,
+  HelpCircle,
+} from "lucide-react";
 import { screensQueryOptions } from "#/server/queries";
 import { deleteScreenFn } from "#/server/functions";
 
@@ -19,8 +27,11 @@ export default function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-60 border-r border-zinc-200 bg-zinc-50 flex flex-col">
       <div className="p-4 border-b border-zinc-200">
-        <Link to="/" className="text-sm font-semibold text-zinc-950 no-underline tracking-tight">
-          pi-design
+        <Link
+          to="/"
+          className="text-sm font-semibold text-zinc-950 no-underline tracking-tight"
+        >
+          @butttons/design
         </Link>
       </div>
 
@@ -28,7 +39,9 @@ export default function Sidebar() {
         <Link
           to="/"
           className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/" ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+            pathname === "/"
+              ? "bg-zinc-950 text-white"
+              : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
           <LayoutGrid size={16} />
@@ -37,7 +50,9 @@ export default function Sidebar() {
         <Link
           to="/design"
           className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/design" ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+            pathname === "/design"
+              ? "bg-zinc-950 text-white"
+              : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
           <Palette size={16} />
@@ -46,7 +61,9 @@ export default function Sidebar() {
         <Link
           to="/components"
           className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/components" ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+            pathname === "/components"
+              ? "bg-zinc-950 text-white"
+              : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
           <Component size={16} />
@@ -55,11 +72,24 @@ export default function Sidebar() {
         <Link
           to="/layout"
           className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/layout" ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-100"
+            pathname === "/layout"
+              ? "bg-zinc-950 text-white"
+              : "text-zinc-600 hover:bg-zinc-100"
           }`}
         >
           <Layers size={16} />
           Layout
+        </Link>
+        <Link
+          to="/help"
+          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
+            pathname === "/help"
+              ? "bg-zinc-950 text-white"
+              : "text-zinc-600 hover:bg-zinc-100"
+          }`}
+        >
+          <HelpCircle size={16} />
+          Help
         </Link>
       </nav>
 
