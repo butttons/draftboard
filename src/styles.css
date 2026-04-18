@@ -1,2 +1,13 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-mono);
+}

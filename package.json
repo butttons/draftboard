@@ -1,10 +1,7 @@
 {
-  "name": "pi-design",
+  "name": "@butttons/design",
   "private": true,
   "type": "module",
-  "bin": {
-    "pi-design": "./bin/pi-design.ts"
-  },
   "imports": {
     "#/*": "./src/*"
   },
@@ -12,6 +9,7 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
+    "start": "bun .output/server/index.mjs",
     "test": "vitest run",
     "format": "biome format",
     "lint": "biome lint",
@@ -32,6 +30,7 @@
     "better-result": "^2.8.2",
     "chokidar": "^5.0.0",
     "lucide-react": "^0.545.0",
+    "nitro": "^3.0.260415-beta",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwindcss": "^4.1.18",

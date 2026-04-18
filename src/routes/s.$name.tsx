@@ -90,7 +90,7 @@ function ScreenEditor() {
       <div className="h-10 bg-white border-b border-zinc-200 flex items-center gap-2 px-3 flex-shrink-0">
         <Link
           to="/"
-          className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
+          className="p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
           title="Back to canvas"
         >
           <ChevronLeft size={18} />
@@ -100,8 +100,8 @@ function ScreenEditor() {
           href={`/p/${name}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
-          title="Open preview in new tab"
+          className="p-1.5 hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
+          title="Open preview"
         >
           <ExternalLink size={16} />
         </a>
@@ -120,14 +120,14 @@ function ScreenEditor() {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               autoFocus
-              className="border border-zinc-200 rounded px-2 py-0.5 text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-zinc-200 px-2 py-0.5 text-sm w-32 bg-white focus:outline-none focus:border-zinc-400"
               onBlur={handleRename}
             />
           </form>
         ) : (
           <button
             onClick={() => setIsRenaming(true)}
-            className="text-sm font-medium text-zinc-900 hover:text-blue-600 transition bg-transparent border-0 cursor-pointer"
+            className="text-sm font-medium text-zinc-950 hover:text-zinc-600 transition bg-transparent border-0 cursor-pointer"
           >
             {name}
           </button>
@@ -141,8 +141,8 @@ function ScreenEditor() {
 
         <button
           onClick={() => setShowEditor(!showEditor)}
-          className={`p-1.5 rounded transition ${
-            showEditor ? "bg-blue-100 text-blue-600" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700"
+          className={`p-1.5 transition ${
+            showEditor ? "bg-zinc-950 text-white" : "hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700"
           }`}
           title="Toggle editor"
         >
@@ -152,7 +152,7 @@ function ScreenEditor() {
         <button
           onClick={save}
           disabled={!hasUnsavedChanges || saveMutation.isPending}
-          className="flex items-center gap-1 px-2.5 py-1 rounded text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="flex items-center gap-1 px-2.5 py-1 text-sm font-medium bg-zinc-950 text-white hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           <Save size={14} />
           {saveMutation.isPending ? "..." : "Save"}
@@ -161,7 +161,7 @@ function ScreenEditor() {
         <button
           onClick={() => deleteMutation.mutate()}
           disabled={deleteMutation.isPending}
-          className="p-1.5 rounded hover:bg-red-50 text-zinc-400 hover:text-red-500 transition"
+          className="p-1.5 hover:bg-red-50 text-zinc-400 hover:text-red-500 transition"
           title="Delete screen"
         >
           <Trash2 size={18} />
@@ -178,7 +178,7 @@ function ScreenEditor() {
 
         {/* Editor panel overlay */}
         {showEditor && (
-          <div className="absolute top-0 right-0 bottom-0 w-[480px] bg-white border-l border-zinc-200 shadow-lg overflow-hidden z-10">
+          <div className="absolute top-0 right-0 bottom-0 w-[480px] bg-white border-l border-zinc-200 overflow-hidden z-10">
             <Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-400">Loading editor...</div>}>
               <Editor
                 height="100%"
@@ -193,6 +193,7 @@ function ScreenEditor() {
                   padding: { top: 12 },
                   scrollBeyondLastLine: false,
                   automaticLayout: true,
+                  fontFamily: "'JetBrains Mono', monospace",
                 }}
                 theme="vs"
               />

@@ -13,7 +13,7 @@ import { validateScreenName } from "./validation";
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
-    name: "pi-design",
+    name: "@butttons/design",
     version: "1.0.0",
   });
 

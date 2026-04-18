@@ -37,7 +37,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="font-sans antialiased bg-white text-zinc-900">
+      <body className="font-mono antialiased bg-white text-zinc-950">
         {!isFullScreen && <Sidebar />}
         <main className={isFullScreen ? "" : "ml-60 min-h-screen"}>{children}</main>
         <Scripts />
