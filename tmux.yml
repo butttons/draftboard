@@ -1,0 +1,9 @@
+name: web
+root: <%= ENV["PWD"] %>
+
+windows:
+  - services:
+      layout: tiled
+      panes:
+        - api-worker:
+            - bun dev
