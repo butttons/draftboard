@@ -5,6 +5,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 import Sidebar from "../components/Sidebar";
+import { useSSE } from "../hooks/useSSE";
 
 import appCss from "../styles.css?url";
 
@@ -27,6 +28,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  useSSE();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isFullScreen = pathname.startsWith("/s/");
 

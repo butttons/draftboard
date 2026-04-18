@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SseRouteImport } from './routes/sse'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as LayoutRouteImport } from './routes/layout'
 import { Route as DesignRouteImport } from './routes/design'
@@ -19,6 +20,11 @@ import { Route as PreviewNameRouteImport } from './routes/preview.$name'
 import { Route as PScreenRouteImport } from './routes/p.$screen'
 import { Route as ApiLayoutRouteImport } from './routes/api.layout'
 
+const SseRoute = SseRouteImport.update({
+  id: '/sse',
+  path: '/sse',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/design': typeof DesignRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/design': typeof DesignRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/design': typeof DesignRoute
   '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/design'
     | '/layout'
     | '/mcp'
+    | '/sse'
     | '/api/layout'
     | '/p/$screen'
     | '/preview/$name'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/design'
     | '/layout'
     | '/mcp'
+    | '/sse'
     | '/api/layout'
     | '/p/$screen'
     | '/preview/$name'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/design'
     | '/layout'
     | '/mcp'
+    | '/sse'
     | '/api/layout'
     | '/p/$screen'
     | '/preview/$name'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   DesignRoute: typeof DesignRoute
   LayoutRoute: typeof LayoutRoute
   McpRoute: typeof McpRoute
+  SseRoute: typeof SseRoute
   ApiLayoutRoute: typeof ApiLayoutRoute
   PScreenRoute: typeof PScreenRoute
   PreviewNameRoute: typeof PreviewNameRoute
@@ -149,6 +162,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sse': {
+      id: '/sse'
+      path: '/sse'
+      fullPath: '/sse'
+      preLoaderRoute: typeof SseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesignRoute: DesignRoute,
   LayoutRoute: LayoutRoute,
   McpRoute: McpRoute,
+  SseRoute: SseRoute,
   ApiLayoutRoute: ApiLayoutRoute,
   PScreenRoute: PScreenRoute,
   PreviewNameRoute: PreviewNameRoute,

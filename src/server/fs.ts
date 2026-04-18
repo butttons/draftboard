@@ -2,9 +2,15 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSy
 import { join } from "node:path";
 import { Result } from "better-result";
 import { validateScreenName } from "./validation";
+import { startWatcher } from "./watcher";
 
 const DESIGN_DIR = ".pi/design";
 const SCREENS_DIR = "screens";
+
+// Start file watcher for live updates
+if (typeof window === "undefined") {
+  startWatcher();
+}
 
 export type Screen = {
   name: string;

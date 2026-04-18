@@ -30,6 +30,8 @@ export function startWatcher(cwd: string = process.cwd()): void {
       changeType = "design_changed";
     } else if (relPath === "components.html") {
       changeType = "components_changed";
+    } else if (relPath === "layout.html") {
+      changeType = "layout_changed";
     } else if (relPath.startsWith("screens/") && relPath.endsWith(".html")) {
       changeType = "screen_changed";
       name = relPath.replace("screens/", "").replace(/\.html$/, "");
