@@ -10,15 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LayoutRouteImport } from './routes/layout'
 import { Route as DesignRouteImport } from './routes/design'
 import { Route as ComponentsRouteImport } from './routes/components'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SNameRouteImport } from './routes/s.$name'
 import { Route as PreviewNameRouteImport } from './routes/preview.$name'
+import { Route as PScreenRouteImport } from './routes/p.$screen'
+import { Route as ApiLayoutRouteImport } from './routes/api.layout'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LayoutRoute = LayoutRouteImport.update({
+  id: '/layout',
+  path: '/layout',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DesignRoute = DesignRouteImport.update({
@@ -46,12 +54,25 @@ const PreviewNameRoute = PreviewNameRouteImport.update({
   path: '/preview/$name',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PScreenRoute = PScreenRouteImport.update({
+  id: '/p/$screen',
+  path: '/p/$screen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLayoutRoute = ApiLayoutRouteImport.update({
+  id: '/api/layout',
+  path: '/api/layout',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/api/layout': typeof ApiLayoutRoute
+  '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
 }
@@ -59,7 +80,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/api/layout': typeof ApiLayoutRoute
+  '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
 }
@@ -68,7 +92,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/components': typeof ComponentsRoute
   '/design': typeof DesignRoute
+  '/layout': typeof LayoutRoute
   '/mcp': typeof McpRoute
+  '/api/layout': typeof ApiLayoutRoute
+  '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
 }
@@ -78,17 +105,32 @@ export interface FileRouteTypes {
     | '/'
     | '/components'
     | '/design'
+    | '/layout'
     | '/mcp'
+    | '/api/layout'
+    | '/p/$screen'
     | '/preview/$name'
     | '/s/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/components' | '/design' | '/mcp' | '/preview/$name' | '/s/$name'
+  to:
+    | '/'
+    | '/components'
+    | '/design'
+    | '/layout'
+    | '/mcp'
+    | '/api/layout'
+    | '/p/$screen'
+    | '/preview/$name'
+    | '/s/$name'
   id:
     | '__root__'
     | '/'
     | '/components'
     | '/design'
+    | '/layout'
     | '/mcp'
+    | '/api/layout'
+    | '/p/$screen'
     | '/preview/$name'
     | '/s/$name'
   fileRoutesById: FileRoutesById
@@ -97,7 +139,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ComponentsRoute: typeof ComponentsRoute
   DesignRoute: typeof DesignRoute
+  LayoutRoute: typeof LayoutRoute
   McpRoute: typeof McpRoute
+  ApiLayoutRoute: typeof ApiLayoutRoute
+  PScreenRoute: typeof PScreenRoute
   PreviewNameRoute: typeof PreviewNameRoute
   SNameRoute: typeof SNameRoute
 }
@@ -109,6 +154,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/layout': {
+      id: '/layout'
+      path: '/layout'
+      fullPath: '/layout'
+      preLoaderRoute: typeof LayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/design': {
@@ -146,6 +198,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreviewNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$screen': {
+      id: '/p/$screen'
+      path: '/p/$screen'
+      fullPath: '/p/$screen'
+      preLoaderRoute: typeof PScreenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/layout': {
+      id: '/api/layout'
+      path: '/api/layout'
+      fullPath: '/api/layout'
+      preLoaderRoute: typeof ApiLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -153,7 +219,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ComponentsRoute: ComponentsRoute,
   DesignRoute: DesignRoute,
+  LayoutRoute: LayoutRoute,
   McpRoute: McpRoute,
+  ApiLayoutRoute: ApiLayoutRoute,
+  PScreenRoute: PScreenRoute,
   PreviewNameRoute: PreviewNameRoute,
   SNameRoute: SNameRoute,
 }

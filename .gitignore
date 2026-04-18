@@ -13,3 +13,4 @@ __unconfig*
 todos.json
 mcp-todos.json
 .playwright-cli
+.pi/design

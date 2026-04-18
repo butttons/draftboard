@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FileCode2, LayoutGrid, Palette, Component, Trash2 } from "lucide-react";
+import { FileCode2, LayoutGrid, Palette, Component, Trash2, Layers } from "lucide-react";
 import { screensQueryOptions } from "#/server/queries";
 import { deleteScreenFn } from "#/server/functions";
 
@@ -51,6 +51,15 @@ export default function Sidebar() {
         >
           <Component size={16} />
           Components
+        </Link>
+        <Link
+          to="/layout"
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition ${
+            pathname === "/layout" ? "bg-zinc-200 text-zinc-900" : "text-zinc-600 hover:bg-zinc-100"
+          }`}
+        >
+          <Layers size={16} />
+          Layout
         </Link>
       </nav>
 

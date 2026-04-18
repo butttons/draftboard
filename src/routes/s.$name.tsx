@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Trash2, Save, Code2 } from "lucide-react";
+import { ChevronLeft, Trash2, Save, Code2, ExternalLink } from "lucide-react";
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { screenQueryOptions } from "#/server/queries";
 import { updateScreenFn, deleteScreenFn, renameScreenFn } from "#/server/functions";
@@ -95,6 +95,16 @@ function ScreenEditor() {
         >
           <ChevronLeft size={18} />
         </Link>
+
+        <a
+          href={`/p/${name}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 rounded hover:bg-zinc-100 text-zinc-500 hover:text-zinc-700 transition"
+          title="Open preview in new tab"
+        >
+          <ExternalLink size={16} />
+        </a>
 
         <div className="w-px h-5 bg-zinc-200" />
 

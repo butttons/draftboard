@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { Result } from "better-result";
-import { listScreens, getScreen, createScreen, updateScreen, deleteScreen, renameScreen, getDesignMd, getComponentsHtml, writeDesignMd, writeComponentsHtml } from "./fs";
+import { listScreens, getScreen, createScreen, updateScreen, deleteScreen, renameScreen, getDesignMd, getComponentsHtml, getLayoutHtml, writeDesignMd, writeComponentsHtml, writeLayoutHtml } from "./fs";
 import { validateScreenName } from "./validation";
 
 export type Screen = {
@@ -61,6 +61,16 @@ export const saveComponentsHtml = createServerFn({ method: "POST" })
   .inputValidator((data: { content: string }) => data)
   .handler(async ({ data }): Promise<Result<void, Error>> => {
     return writeComponentsHtml(data.content);
+  });
+
+export const fetchLayoutHtml = createServerFn({ method: "GET" }).handler(async (): Promise<string> => {
+  return getLayoutHtml();
+});
+
+export const saveLayoutHtml = createServerFn({ method: "POST" })
+  .inputValidator((data: { content: string }) => data)
+  .handler(async ({ data }): Promise<Result<void, Error>> => {
+    return writeLayoutHtml(data.content);
   });
 
 export function isValidScreenName(name: string): boolean {

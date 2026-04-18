@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import { fetchScreens, fetchScreen, fetchDesignMd, fetchComponentsHtml } from "./functions";
+import { fetchScreens, fetchScreen, fetchDesignMd, fetchComponentsHtml, fetchLayoutHtml } from "./functions";
 
 export const screensQueryOptions = () =>
   queryOptions({
@@ -23,4 +23,10 @@ export const componentsHtmlQueryOptions = () =>
   queryOptions({
     queryKey: ["componentsHtml"],
     queryFn: () => fetchComponentsHtml(),
+  });
+
+export const layoutHtmlQueryOptions = () =>
+  queryOptions({
+    queryKey: ["layoutHtml"],
+    queryFn: () => fetchLayoutHtml(),
   });

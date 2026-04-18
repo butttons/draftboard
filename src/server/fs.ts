@@ -40,6 +40,11 @@ export function scaffoldDesignDir(cwd: string = process.cwd()): void {
   if (!existsSync(componentsPath)) {
     writeFileSync(componentsPath, DEFAULT_COMPONENTS_HTML);
   }
+
+  const layoutPath = join(designDir, "layout.html");
+  if (!existsSync(layoutPath)) {
+    writeFileSync(layoutPath, DEFAULT_LAYOUT_HTML);
+  }
 }
 
 export function listScreens(cwd: string = process.cwd()): Screen[] {
@@ -64,6 +69,62 @@ export function getScreen(name: string, cwd: string = process.cwd()): { name: st
   const filePath = join(getScreensDir(cwd), `${name}.html`);
   if (!existsSync(filePath)) return null;
   return { name, html: readFileSync(filePath, "utf-8") };
+}
+
+export function getScreenLines(
+  name: string,
+  start: number,
+  end: number,
+  cwd: string = process.cwd()
+): Result<{ name: string; lines: string[]; start: number; end: number; total: number }, string> {
+  if (!validateScreenName(name)) {
+    return Result.err("Invalid screen name.");
+  }
+  const filePath = join(getScreensDir(cwd), `${name}.html`);
+  if (!existsSync(filePath)) {
+    return Result.err(`Screen "${name}" not found.`);
+  }
+  const content = readFileSync(filePath, "utf-8");
+  const allLines = content.split("\n");
+  const total = allLines.length;
+
+  if (start < 1) return Result.err("Start line must be >= 1.");
+  if (end < start) return Result.err("End line must be >= start line.");
+
+  const lines = allLines.slice(start - 1, end);
+  return Result.ok({ name, lines, start, end: Math.min(end, total), total });
+}
+
+export function updateScreenLines(
+  name: string,
+  start: number,
+  end: number,
+  content: string,
+  cwd: string = process.cwd()
+): Result<void, string> {
+  if (!validateScreenName(name)) {
+    return Result.err("Invalid screen name.");
+  }
+  const filePath = join(getScreensDir(cwd), `${name}.html`);
+  if (!existsSync(filePath)) {
+    return Result.err(`Screen "${name}" not found.`);
+  }
+
+  const existingContent = readFileSync(filePath, "utf-8");
+  const allLines = existingContent.split("\n");
+  const total = allLines.length;
+
+  if (start < 1) return Result.err("Start line must be >= 1.");
+  if (end < start) return Result.err("End line must be >= start line.");
+  if (start > total) return Result.err(`Start line ${start} exceeds file length (${total}).`);
+
+  const clampedEnd = Math.min(end, total);
+  const newLines = content.split("\n");
+  const before = allLines.slice(0, start - 1);
+  const after = allLines.slice(clampedEnd);
+  const result = [...before, ...newLines, ...after].join("\n");
+
+  return Result.try(() => writeFileSync(filePath, result));
 }
 
 export function createScreen(name: string, html: string, cwd: string = process.cwd()): Result<void, Error> {
@@ -118,6 +179,7 @@ export function getConventions(cwd: string = process.cwd()): string {
   const designDir = getDesignDir(cwd);
   const designMdPath = join(designDir, "design.md");
   const componentsPath = join(designDir, "components.html");
+  const layoutPath = join(designDir, "layout.html");
 
   let result = "";
   if (existsSync(designMdPath)) {
@@ -126,6 +188,12 @@ export function getConventions(cwd: string = process.cwd()): string {
   result += "\n\n---\n\n";
   if (existsSync(componentsPath)) {
     result += readFileSync(componentsPath, "utf-8");
+  }
+  result += "\n\n---\n\n## Layout\n\nThe following layout template wraps all screens. Write only the body content (what goes inside `<body>`). Use `{{content}}` as the placeholder:\n\n";
+  if (existsSync(layoutPath)) {
+    result += readFileSync(layoutPath, "utf-8");
+  } else {
+    result += DEFAULT_LAYOUT_HTML;
   }
   return result;
 }
@@ -152,6 +220,17 @@ export function writeComponentsHtml(content: string, cwd: string = process.cwd()
   return Result.try(() => writeFileSync(filePath, content));
 }
 
+export function getLayoutHtml(cwd: string = process.cwd()): string {
+  const filePath = join(getDesignDir(cwd), "layout.html");
+  if (!existsSync(filePath)) return DEFAULT_LAYOUT_HTML;
+  return readFileSync(filePath, "utf-8");
+}
+
+export function writeLayoutHtml(content: string, cwd: string = process.cwd()): Result<void, Error> {
+  const filePath = join(getDesignDir(cwd), "layout.html");
+  return Result.try(() => writeFileSync(filePath, content));
+}
+
 export function getDesignFilePath(cwd: string = process.cwd()): string {
   return join(getDesignDir(cwd), "design.md");
 }
@@ -160,11 +239,19 @@ export function getComponentsFilePath(cwd: string = process.cwd()): string {
   return join(getDesignDir(cwd), "components.html");
 }
 
+export function getLayoutFilePath(cwd: string = process.cwd()): string {
+  return join(getDesignDir(cwd), "layout.html");
+}
+
 export function getScreenFilePath(name: string, cwd: string = process.cwd()): string {
   return join(getScreensDir(cwd), `${name}.html`);
 }
 
 const DEFAULT_DESIGN_MD = `# Design Conventions
+
+## Preview
+- Screens are viewable at \`/p/<screen-name>\`
+- Example: \`/p/login\` shows the login screen
 
 ## Spacing
 - Use only: \`p-2\` \`p-4\` \`p-6\` \`p-8\`
@@ -286,4 +373,27 @@ const DEFAULT_COMPONENTS_HTML = `<!-- Button Primary -->
 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700">
   Badge
 </span>
+`;
+
+const DEFAULT_LAYOUT_HTML = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body>
+  {{content}}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
 `;

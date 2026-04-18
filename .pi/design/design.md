@@ -1,5 +1,9 @@
 # Design Conventions
 
+## Preview
+- Screens are viewable at `/p/<screen-name>`
+- Example: `/p/login` shows the login screen
+
 ## Spacing
 - Use only: `p-2` `p-4` `p-6` `p-8`
 - Gap: `gap-2` `gap-4` `gap-6`
@@ -7,7 +11,7 @@
 
 ## Typography
 - Sizes: `text-sm` `text-base` `text-lg` `text-2xl`
-- Headings: semibold, not bold, no underline
+- Headings: semibold, not bold
 - Body: `text-zinc-600`
 
 ## Colors

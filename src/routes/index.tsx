@@ -139,14 +139,25 @@ function Canvas() {
       </div>
 
       {screens.length === 0 && !isCreating && (
-        <div className="mt-12 text-center">
+        <div className="mt-8 border border-dashed border-zinc-300 rounded-lg p-12 text-center bg-zinc-50/50">
           <div className="w-16 h-16 rounded-lg bg-zinc-100 flex items-center justify-center mx-auto mb-4">
             <Plus size={24} className="text-zinc-400" />
           </div>
           <h2 className="text-lg font-semibold text-zinc-900 mb-2">No screens yet</h2>
-          <p className="text-sm text-zinc-600 mb-4">
-            Create your first screen or connect an AI agent via MCP.
+          <p className="text-sm text-zinc-600 mb-6">
+            Create a screen manually or connect an AI agent via MCP.
           </p>
+          <div className="flex flex-col items-center gap-4">
+            <button
+              onClick={() => setIsCreating(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+            >
+              Create first screen
+            </button>
+            <div className="text-xs text-zinc-400">
+              MCP endpoint: <code className="bg-zinc-100 px-2 py-0.5 rounded">/mcp</code>
+            </div>
+          </div>
         </div>
       )}
     </div>
