@@ -14,12 +14,12 @@ import {
 import { fetchMcpActivities } from "#/server/functions";
 import type { McpActivity, McpAction } from "#/server/mcp/activity";
 import {
-  Popover,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "#/components/ui/popover";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "#/components/ui/drawer";
 
 const actionIcons: Record<McpAction, typeof Zap> = {
   init_project: Play,
@@ -62,7 +62,7 @@ function ActivityItem({ activity }: { activity: McpActivity }) {
   const label = actionLabels[activity.action] || activity.action;
 
   return (
-    <div className="flex items-start gap-3 px-3 py-2 hover:bg-zinc-50 transition">
+    <div className="flex items-start gap-3 px-4 py-3 hover:bg-zinc-50 transition">
       <div className="mt-0.5 p-1.5 rounded-md bg-zinc-100 text-zinc-600">
         <Icon size={14} />
       </div>
@@ -100,8 +100,8 @@ export default function McpStatusBadge() {
     Date.now() - new Date(activities[0].timestamp).getTime() < 5000;
 
   return (
-    <Popover>
-      <PopoverTrigger
+    <Drawer direction="right">
+      <DrawerTrigger
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
           hasRecent
             ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
@@ -119,18 +119,18 @@ export default function McpStatusBadge() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
         )}
-      </PopoverTrigger>
-      <PopoverContent side="top" align="start" className="w-80 p-0">
-        <PopoverHeader className="px-4 py-3 border-b border-zinc-100">
-          <PopoverTitle className="flex items-center gap-2 text-sm">
+      </DrawerTrigger>
+      <DrawerContent>
+        <DrawerHeader className="border-b border-zinc-100">
+          <DrawerTitle className="flex items-center gap-2 text-sm">
             <Zap size={14} className="text-zinc-500" />
             MCP Activity
-          </PopoverTitle>
-        </PopoverHeader>
+          </DrawerTitle>
+        </DrawerHeader>
 
-        <div className="max-h-80 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
           {activities.length === 0 ? (
-            <div className="px-4 py-8 text-center">
+            <div className="px-4 py-12 text-center">
               <Zap size={24} className="mx-auto text-zinc-300 mb-2" />
               <p className="text-sm text-zinc-500">No MCP activity yet</p>
               <p className="text-xs text-zinc-400 mt-1">
@@ -154,7 +154,7 @@ export default function McpStatusBadge() {
             </p>
           </div>
         )}
-      </PopoverContent>
-    </Popover>
+      </DrawerContent>
+    </Drawer>
   );
 }
