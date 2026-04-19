@@ -301,13 +301,30 @@ export function createMcpServer(): McpServer {
     },
     tracked("get_conventions", () => {
       const conventions = getConventions();
-      const response = `## HOW TO USE
+      const response = `## HOW TO BUILD SCREENS
 
-1. Read the DESIGN CONVENTIONS below and follow them strictly.
-2. Read the COMPONENTS section - these are pre-built HTML blocks.
-3. Compose your screen by COPY-PASTING and combining these components.
-4. Do NOT write raw HTML when a component exists for that pattern.
-5. Wrap components in layout containers using the spacing/layout rules.
+1. ALWAYS use the custom elements below (db-button, db-card, etc.) instead of raw HTML.
+2. These are web components defined in the layout - they work out of the box.
+3. Combine them to build your screen. Do NOT write raw divs/buttons when a component exists.
+4. Follow the DESIGN CONVENTIONS for spacing, colors, and typography.
+5. Your screen should ONLY contain component markup and Tailwind layout classes.
+
+## AVAILABLE COMPONENTS
+
+| Component | Usage | Attributes |
+|-----------|-------|------------|
+| <db-button> | Actions | variant="primary\|secondary" |
+| <db-input> | Text input | placeholder, type |
+| <db-card> | Container | (use with db-card-header/body/footer) |
+| <db-card-header> | Card header | - |
+| <db-card-body> | Card body | - |
+| <db-card-footer> | Card footer | - |
+| <db-empty> | Empty state | title, description |
+| <db-row> | List item | (use slots: avatar, primary, secondary, meta) |
+| <db-badge> | Label | variant="default\|success\|warning\|error" |
+| <db-avatar> | Avatar | size="sm\|md\|lg", slot content = initials |
+| <db-field> | Form field | label, placeholder, helper |
+| <db-nav> | Navigation | slots: brand, links |
 
 ---
 

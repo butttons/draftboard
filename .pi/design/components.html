@@ -1,90 +1,80 @@
+<!-- COMPONENTS: Copy-paste these into your screens -->
+
 <!-- Button Primary -->
-<button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+<button class="bg-zinc-950 text-white px-4 py-2 text-sm font-medium rounded hover:bg-zinc-800 transition">
   Button
 </button>
 
 <!-- Button Secondary -->
-<button class="border border-zinc-200 text-zinc-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-50 transition">
+<button class="border border-zinc-200 text-zinc-700 px-4 py-2 text-sm font-medium rounded hover:bg-zinc-50 transition">
   Button
 </button>
 
 <!-- Input -->
-<input
-  type="text"
-  placeholder="Enter text..."
-  class="border border-zinc-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-/>
+<input type="text" placeholder="Enter text..." class="w-full border border-zinc-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950" />
 
 <!-- Card -->
-<div class="border border-zinc-200 rounded-lg p-4 bg-white shadow-sm">
-  <h3 class="text-base font-semibold text-zinc-900 mb-2">Card Title</h3>
-  <p class="text-sm text-zinc-600">Card content goes here.</p>
-</div>
-
-<!-- Nav Bar -->
-<nav class="border-b border-zinc-200 bg-white px-6 py-3">
-  <div class="flex items-center justify-between">
-    <span class="text-lg font-semibold text-zinc-900">Logo</span>
-    <div class="flex items-center gap-4">
-      <a href="#" class="text-sm text-zinc-600 hover:text-zinc-900">Link</a>
-      <a href="#" class="text-sm text-zinc-600 hover:text-zinc-900">Link</a>
-    </div>
+<div class="border border-zinc-200 rounded bg-white overflow-hidden">
+  <div class="px-4 py-3 border-b border-zinc-200">
+    <h3 class="text-sm font-semibold">Card Title</h3>
   </div>
-</nav>
+  <div class="p-4">
+    <p class="text-sm text-zinc-600">Card content goes here.</p>
+  </div>
+  <div class="px-4 py-3 border-t border-zinc-200 bg-zinc-50">
+    <button class="bg-zinc-950 text-white px-4 py-2 text-sm font-medium rounded">Action</button>
+  </div>
+</div>
 
 <!-- Empty State -->
 <div class="flex flex-col items-center justify-center py-16 text-center">
-  <div class="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center mb-4">
-    <span class="text-zinc-400">Icon</span>
+  <div class="w-12 h-12 rounded bg-zinc-100 flex items-center justify-center mb-4">
+    <span class="text-zinc-400 text-xl">+</span>
   </div>
   <h3 class="text-base font-semibold text-zinc-900 mb-1">No items yet</h3>
   <p class="text-sm text-zinc-600 mb-4">Get started by creating your first item.</p>
-  <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
-    Create
-  </button>
+  <button class="bg-zinc-950 text-white px-4 py-2 text-sm font-medium rounded">Create</button>
 </div>
 
-<!-- Table Row -->
-<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-200">
+<!-- Row -->
+<div class="flex items-center justify-between px-4 py-3 border-b border-zinc-200 hover:bg-zinc-50 transition">
   <div class="flex items-center gap-3">
-    <div class="w-8 h-8 rounded-full bg-zinc-200"></div>
+    <div class="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center">
+      <span class="text-sm font-medium text-zinc-600">JD</span>
+    </div>
     <div>
-      <p class="text-sm font-medium text-zinc-900">Name</p>
-      <p class="text-sm text-zinc-600">email@example.com</p>
+      <p class="text-sm font-medium text-zinc-900">John Doe</p>
+      <p class="text-sm text-zinc-500">john@example.com</p>
     </div>
   </div>
   <span class="text-sm text-zinc-400">2h ago</span>
 </div>
 
-<!-- Modal Overlay -->
-<div class="fixed inset-0 bg-black/50 flex items-center justify-center">
-  <div class="bg-white rounded-lg p-6 w-full max-w-md shadow-sm">
-    <h3 class="text-lg font-semibold text-zinc-900 mb-2">Modal Title</h3>
-    <p class="text-sm text-zinc-600 mb-4">Modal content goes here.</p>
-    <div class="flex justify-end gap-2">
-      <button class="border border-zinc-200 px-4 py-2 rounded-lg text-sm">Cancel</button>
-      <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">Confirm</button>
-    </div>
-  </div>
-</div>
+<!-- Badge -->
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700">Default</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700">Success</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-700">Warning</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-50 text-red-700">Error</span>
+
+<!-- Avatar -->
+<div class="w-8 h-8 rounded-full bg-zinc-200 flex items-center justify-center text-xs font-medium text-zinc-600">SM</div>
+<div class="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center text-sm font-medium text-zinc-600">MD</div>
+<div class="w-12 h-12 rounded-full bg-zinc-200 flex items-center justify-center text-base font-medium text-zinc-600">LG</div>
 
 <!-- Form Field -->
 <div class="space-y-1">
-  <label class="block text-sm font-medium text-zinc-900">Label</label>
-  <input
-    type="text"
-    placeholder="Placeholder"
-    class="w-full border border-zinc-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-  />
+  <label class="block text-sm font-medium text-zinc-900">Email</label>
+  <input type="text" placeholder="you@example.com" class="w-full border border-zinc-200 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-950" />
   <p class="text-sm text-zinc-400">Helper text</p>
 </div>
 
-<!-- Avatar -->
-<div class="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center">
-  <span class="text-sm font-medium text-zinc-600">JD</span>
-</div>
-
-<!-- Badge -->
-<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700">
-  Badge
-</span>
+<!-- Nav -->
+<nav class="border-b border-zinc-200 bg-white px-6 py-3">
+  <div class="flex items-center justify-between">
+    <span class="text-lg font-semibold text-zinc-900">Logo</span>
+    <div class="flex items-center gap-4">
+      <a href="#" class="text-sm text-zinc-600 hover:text-zinc-900">Home</a>
+      <a href="#" class="text-sm text-zinc-600 hover:text-zinc-900">About</a>
+    </div>
+  </div>
+</nav>
