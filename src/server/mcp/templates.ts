@@ -7,9 +7,7 @@ export function buildConventionsResponse(
 	const componentList = components
 		.map((c) => {
 			const variant = c.variant ? `:${c.variant}` : "";
-			const props = Object.keys(c.props)
-				.filter((k) => k !== "variant")
-				.join(", ");
+			const props = c.props.join(", ");
 			const slots = c.slots.join(", ");
 			let desc = `- **${c.name}**${variant}`;
 			if (props) desc += ` (props: ${props})`;
@@ -27,21 +25,28 @@ export function buildConventionsResponse(
 
 ## MARKER FORMAT (REQUIRED)
 
-Every component in your screen MUST be wrapped with markers:
+Every component instance in your screen MUST be wrapped with markers. The
+server-owned format for registered components is:
 
 \`\`\`html
-<!-- button:start label="Save" variant=primary -->
-<button class="bg-zinc-950 text-white px-4 py-2 text-sm font-medium rounded">Save</button>
+<!-- button:start variant="primary" -->
+<button class="...">Save</button>
 <!-- button:end -->
 
-<!-- card:start title="My Card" -->
-<div class="border border-zinc-200 rounded bg-white overflow-hidden">
+<!-- card:start -->
+<div class="...">
   ...
 </div>
 <!-- card:end -->
 \`\`\`
 
-This allows the AI to find and update specific components later using update_screen with start/end lines.
+Component definitions (in components.html) additionally declare props/slots in
+their start marker — e.g. \`<!-- card:start props="title" slots="content" -->\`.
+Do not hand-write those declarations on screens; reference the component and
+fill its props/slots inline.
+
+Markers let the tools find and edit specific component instances later via
+update_screen with start/end lines or replace_component_in_screen.
 
 ## LINKING BETWEEN SCREENS
 

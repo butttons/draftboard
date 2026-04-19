@@ -102,7 +102,9 @@ export function generateComponentPreviewHtml({
   if (!component) {
     return errorHtml(variant ? `${name}:${variant}` : name);
   }
-  const content = renderComponent(component);
+  const sampleProps: Record<string, string> = {};
+  for (const p of component.props) sampleProps[p] = p;
+  const content = renderComponent(component, sampleProps);
   return COMPONENT_LAYOUT.replace("{{content}}", content);
 }
 

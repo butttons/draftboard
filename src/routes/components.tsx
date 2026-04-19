@@ -6,7 +6,8 @@ import { componentsHtmlQueryOptions } from "#/server/queries";
 type ParsedBlock = {
   name: string;
   variant?: string;
-  props: Record<string, string>;
+  props: string[];
+  slots: string[];
   html: string;
 };
 
@@ -20,16 +21,25 @@ function parseMarkerAttrs(str: string): Record<string, string> {
   return attrs;
 }
 
+function splitList(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
 function parseComponentsHtml(content: string): ParsedBlock[] {
   const blocks: ParsedBlock[] = [];
   const re = /<!-- ([a-zA-Z][\w-]*):start(.*?) -->([\s\S]*?)<!-- \1:end -->/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(content)) !== null) {
-    const props = parseMarkerAttrs(m[2].trim());
+    const attrs = parseMarkerAttrs(m[2].trim());
     blocks.push({
       name: m[1],
-      variant: props.variant,
-      props,
+      variant: attrs.variant,
+      props: splitList(attrs.props),
+      slots: splitList(attrs.slots),
       html: m[3].trim(),
     });
   }
@@ -48,10 +58,12 @@ function ComponentBlock({ block }: { block: ParsedBlock }) {
   const src = block.variant
     ? `/c/${block.name}?variant=${encodeURIComponent(block.variant)}`
     : `/c/${block.name}`;
-  const propSummary = Object.entries(block.props)
-    .filter(([k]) => k !== "variant")
-    .map(([k, v]) => `${k}="${v}"`)
-    .join(" ");
+  const propSummary = [
+    block.props.length > 0 ? `props: ${block.props.join(", ")}` : "",
+    block.slots.length > 0 ? `slots: ${block.slots.join(", ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("  ");
 
   return (
     <section className="space-y-3">

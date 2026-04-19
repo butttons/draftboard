@@ -6,58 +6,76 @@ import { getDesignDir } from "./config";
 export type Component = {
 	name: string;
 	variant?: string;
-	html: string;
-	props: Record<string, string>;
+	props: string[];
 	slots: string[];
+	html: string;
+};
+
+export type ComponentValidation = {
+	errors: string[];
+	warnings: string[];
 };
 
 function getComponentsPath(cwd: string = process.cwd()): string {
 	return join(getDesignDir(cwd), "components.html");
 }
 
-function extractSlots(html: string): string[] {
-	const slots: string[] = [];
-	const regex = /<!-- slot:(\w+) -->/g;
-	let match;
-	while ((match = regex.exec(html)) !== null) {
-		if (!slots.includes(match[1])) {
-			slots.push(match[1]);
-		}
-	}
-	return slots;
-}
-
 function parseMarkerAttrs(str: string): Record<string, string> {
 	const attrs: Record<string, string> = {};
-	// Match key=value or key="value with spaces"
 	const regex = /(\w+)=(?:"([^"]*)"|(\S+))/g;
-	let match;
+	let match: RegExpExecArray | null;
 	while ((match = regex.exec(str)) !== null) {
 		attrs[match[1]] = match[2] ?? match[3];
 	}
 	return attrs;
 }
 
+function splitList(value: string | undefined): string[] {
+	if (!value) return [];
+	return value
+		.split(",")
+		.map((s) => s.trim())
+		.filter((s) => s.length > 0);
+}
+
+export function extractReferencedProps(html: string): string[] {
+	const names = new Set<string>();
+	const re = /\{\{\s*([a-zA-Z_][\w-]*)\s*\}\}/g;
+	let m: RegExpExecArray | null;
+	while ((m = re.exec(html)) !== null) names.add(m[1]);
+	return [...names];
+}
+
+export function extractReferencedSlots(html: string): string[] {
+	const names = new Set<string>();
+	const re = /<!--\s*slot:([a-zA-Z_][\w-]*)\s*-->/g;
+	let m: RegExpExecArray | null;
+	while ((m = re.exec(html)) !== null) names.add(m[1]);
+	return [...names];
+}
+
 function parseComponents(content: string): Component[] {
 	const components: Component[] = [];
 	const regex = /<!-- ([a-zA-Z][\w-]*):start(.*?) -->([\s\S]*?)<!-- \1:end -->/g;
-	let match;
-
+	let match: RegExpExecArray | null;
 	while ((match = regex.exec(content)) !== null) {
 		const name = match[1];
-		const attrsStr = match[2].trim();
+		const attrs = parseMarkerAttrs(match[2].trim());
 		const html = match[3].trim();
-		const props = parseMarkerAttrs(attrsStr);
+
+		const declaredProps = splitList(attrs.props);
+		const declaredSlots = splitList(attrs.slots);
+		const props = declaredProps.length > 0 ? declaredProps : extractReferencedProps(html);
+		const slots = declaredSlots.length > 0 ? declaredSlots : extractReferencedSlots(html);
 
 		components.push({
 			name,
-			variant: props.variant,
-			html,
+			variant: attrs.variant,
 			props,
-			slots: extractSlots(html),
+			slots,
+			html,
 		});
 	}
-
 	return components;
 }
 
@@ -91,14 +109,22 @@ export function getComponentNames(cwd: string = process.cwd()): string[] {
 function buildComponentBlock({
 	name,
 	variant,
+	props,
+	slots,
 	html,
 }: {
 	name: string;
 	variant?: string;
+	props: string[];
+	slots: string[];
 	html: string;
 }): string {
-	const attrs = variant ? ` variant="${variant}"` : "";
-	return `<!-- ${name}:start${attrs} -->\n${html.trim()}\n<!-- ${name}:end -->`;
+	const attrs: string[] = [];
+	if (variant) attrs.push(`variant="${variant}"`);
+	if (props.length > 0) attrs.push(`props="${props.join(",")}"`);
+	if (slots.length > 0) attrs.push(`slots="${slots.join(",")}"`);
+	const attrStr = attrs.length > 0 ? ` ${attrs.join(" ")}` : "";
+	return `<!-- ${name}:start${attrStr} -->\n${html.trim()}\n<!-- ${name}:end -->`;
 }
 
 function findBlockRange({
@@ -124,26 +150,108 @@ function findBlockRange({
 	return null;
 }
 
+const KEBAB_RE = /^[a-z][a-z0-9]*(-[a-z0-9]+)*$/;
+const DOCUMENT_TAG_RE = /<\s*(html|head|body|script)\b/i;
+
+export function validateComponentInput({
+	name,
+	variant,
+	html,
+	props,
+	slots,
+}: {
+	name: string;
+	variant?: string;
+	html: string;
+	props: string[];
+	slots: string[];
+}): ComponentValidation {
+	const errors: string[] = [];
+	const warnings: string[] = [];
+
+	if (!KEBAB_RE.test(name)) {
+		errors.push(
+			`Component name "${name}" must be kebab-case (e.g. "info-card", lowercase letters, digits, and single hyphens).`,
+		);
+	}
+	if (variant !== undefined && variant.length > 0 && !/^[a-z][a-z0-9-]*$/i.test(variant)) {
+		errors.push(`Variant "${variant}" must be a simple identifier.`);
+	}
+	if (html.trim().length === 0) {
+		errors.push("Component html must be non-empty.");
+	}
+
+	const startMarker = new RegExp(`<!--\\s*${name}:start\\b`);
+	const endMarker = new RegExp(`<!--\\s*${name}:end\\b`);
+	if (startMarker.test(html) || endMarker.test(html)) {
+		errors.push(
+			`Do not include <!-- ${name}:start --> or <!-- ${name}:end --> in html; the server adds them. Pass the inner HTML only.`,
+		);
+	}
+
+	const docTag = html.match(DOCUMENT_TAG_RE);
+	if (docTag) {
+		errors.push(
+			`Pass a component fragment, not a full document. Remove the <${docTag[1].toLowerCase()}> tag.`,
+		);
+	}
+
+	const referencedProps = new Set(extractReferencedProps(html));
+	const referencedSlots = new Set(extractReferencedSlots(html));
+	const declaredProps = new Set(props);
+	const declaredSlots = new Set(slots);
+
+	for (const ref of referencedProps) {
+		if (!declaredProps.has(ref)) {
+			errors.push(
+				`Undeclared prop "${ref}" referenced via {{${ref}}}. Add it to the props array or remove the reference.`,
+			);
+		}
+	}
+	for (const ref of referencedSlots) {
+		if (!declaredSlots.has(ref)) {
+			errors.push(
+				`Undeclared slot "${ref}" referenced via <!-- slot:${ref} -->. Add it to the slots array or remove the reference.`,
+			);
+		}
+	}
+	for (const p of declaredProps) {
+		if (!referencedProps.has(p)) {
+			warnings.push(`Declared prop "${p}" is unused in html.`);
+		}
+	}
+	for (const s of declaredSlots) {
+		if (!referencedSlots.has(s)) {
+			warnings.push(`Declared slot "${s}" is unused in html.`);
+		}
+	}
+
+	return { errors, warnings };
+}
+
 export function upsertComponent({
 	name,
 	html,
 	variant,
+	props = [],
+	slots = [],
 	cwd = process.cwd(),
 }: {
 	name: string;
 	html: string;
 	variant?: string;
+	props?: string[];
+	slots?: string[];
 	cwd?: string;
-}): Result<{ created: boolean }, Error> {
-	if (!/^[a-z][a-z0-9-]*$/i.test(name)) {
-		return Result.err(new Error("Invalid component name. Use a word identifier."));
+}): Result<{ created: boolean; warnings: string[] }, Error> {
+	const validation = validateComponentInput({ name, variant, html, props, slots });
+	if (validation.errors.length > 0) {
+		return Result.err(new Error(validation.errors.join("\n")));
 	}
-	if (html.trim().length === 0) {
-		return Result.err(new Error("Component html must be non-empty."));
-	}
+
 	const path = getComponentsPath(cwd);
 	const existing = existsSync(path) ? readFileSync(path, "utf-8") : "";
-	const block = buildComponentBlock({ name, variant, html });
+	const block = buildComponentBlock({ name, variant, props, slots, html });
 	const range = findBlockRange({ content: existing, name, variant });
 
 	let next: string;
@@ -156,7 +264,10 @@ export function upsertComponent({
 		next = existing + sep + block + "\n";
 		created = true;
 	}
-	return Result.try(() => writeFileSync(path, next)).map(() => ({ created }));
+	return Result.try(() => writeFileSync(path, next)).map(() => ({
+		created,
+		warnings: validation.warnings,
+	}));
 }
 
 export function deleteComponent({
@@ -188,13 +299,11 @@ export function renderComponent(
 	props: Record<string, string> = {},
 ): string {
 	let html = component.html;
-	// Replace {{prop}} with provided values, fallback to defaults from marker
-	for (const [key, value] of Object.entries({ ...component.props, ...props })) {
+	for (const [key, value] of Object.entries(props)) {
 		html = html.replaceAll(`{{${key}}}`, value);
 	}
-	// Replace slots with placeholder comments
 	for (const slot of component.slots) {
-		if (!props[slot]) {
+		if (!(slot in props)) {
 			html = html.replaceAll(
 				`<!-- slot:${slot} -->`,
 				`<!-- TODO: add ${slot} content -->`,

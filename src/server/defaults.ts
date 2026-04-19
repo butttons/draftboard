@@ -31,19 +31,19 @@ export const DEFAULT_DESIGN_MD = `# Design Conventions
 - Keep it simple and clean
 `;
 
-export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label="Button" -->
+export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant="primary" props="label" -->
 <button class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition">{{label}}</button>
 <!-- button:end -->
 
-<!-- button:start variant=secondary label="Button" -->
+<!-- button:start variant="secondary" props="label" -->
 <button class="border border-zinc-200 text-zinc-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-zinc-50 transition">{{label}}</button>
 <!-- button:end -->
 
-<!-- input:start placeholder="Enter text..." -->
+<!-- input:start props="placeholder" -->
 <input type="text" placeholder="{{placeholder}}" class="border border-zinc-200 rounded-lg px-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-blue-500"/>
 <!-- input:end -->
 
-<!-- card:start title="Card Title" -->
+<!-- card:start props="title" slots="content" -->
 <div class="border border-zinc-200 rounded-lg bg-white shadow-sm overflow-hidden">
   <div class="px-4 py-3 border-b border-zinc-200">
     <h3 class="text-base font-semibold text-zinc-900">{{title}}</h3>
@@ -54,7 +54,7 @@ export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label=
 </div>
 <!-- card:end -->
 
-<!-- nav:start brand="Brand" -->
+<!-- nav:start props="brand" slots="links" -->
 <nav class="border-b border-zinc-200 bg-white px-6 py-3">
   <div class="flex items-center justify-between">
     <span class="text-lg font-semibold text-zinc-900">{{brand}}</span>
@@ -65,7 +65,7 @@ export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label=
 </nav>
 <!-- nav:end -->
 
-<!-- empty:start title="No items yet" message="Get started by creating your first item." -->
+<!-- empty:start props="title,message" slots="icon,action" -->
 <div class="flex flex-col items-center justify-center py-16 text-center">
   <div class="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center mb-4">
     <!-- slot:icon -->
@@ -76,7 +76,7 @@ export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label=
 </div>
 <!-- empty:end -->
 
-<!-- field:start label="Label" -->
+<!-- field:start props="label" slots="input" -->
 <div class="space-y-1">
   <label class="block text-sm font-medium text-zinc-900">{{label}}</label>
   <!-- slot:input -->
@@ -84,7 +84,7 @@ export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label=
 </div>
 <!-- field:end -->
 
-<!-- row:start name="John Doe" detail="john@example.com" -->
+<!-- row:start props="name,detail" slots="trailing" -->
 <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-200">
   <div>
     <p class="text-sm font-medium text-zinc-900">{{name}}</p>
@@ -94,11 +94,11 @@ export const DEFAULT_COMPONENTS_HTML = `<!-- button:start variant=primary label=
 </div>
 <!-- row:end -->
 
-<!-- badge:start label="Status" variant=default -->
+<!-- badge:start variant="default" props="label" -->
 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700">{{label}}</span>
 <!-- badge:end -->
 
-<!-- avatar:start initials="SM" size=md -->
+<!-- avatar:start props="initials" -->
 <div class="w-10 h-10 rounded-full bg-zinc-200 flex items-center justify-center text-sm font-medium text-zinc-600">{{initials}}</div>
 <!-- avatar:end -->
 `;

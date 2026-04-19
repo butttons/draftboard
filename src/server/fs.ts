@@ -26,31 +26,46 @@ export type Screen = {
 	updated_at: string;
 };
 
-export function scaffoldDesignDir(cwd: string = process.cwd()): void {
+export type ScaffoldResult = {
+	alreadyInitialized: boolean;
+	created: string[];
+};
+
+export function isProjectInitialized(cwd: string = process.cwd()): boolean {
+	return existsSync(join(getDesignDir(cwd), "design.md"));
+}
+
+export function ensureDesignDirs(cwd: string = process.cwd()): void {
 	const designDir = getDesignDir(cwd);
 	const screensDir = getScreensDir(cwd);
+	if (!existsSync(designDir)) mkdirSync(designDir, { recursive: true });
+	if (!existsSync(screensDir)) mkdirSync(screensDir, { recursive: true });
+}
 
-	if (!existsSync(designDir)) {
-		mkdirSync(designDir, { recursive: true });
-	}
-	if (!existsSync(screensDir)) {
-		mkdirSync(screensDir, { recursive: true });
-	}
-
-	const designMdPath = join(designDir, "design.md");
-	if (!existsSync(designMdPath)) {
-		writeFileSync(designMdPath, DEFAULT_DESIGN_MD);
+export function scaffoldDesignDir(cwd: string = process.cwd()): ScaffoldResult {
+	if (isProjectInitialized(cwd)) {
+		return { alreadyInitialized: true, created: [] };
 	}
 
-	const componentsPath = join(designDir, "components.html");
-	if (!existsSync(componentsPath)) {
-		writeFileSync(componentsPath, DEFAULT_COMPONENTS_HTML);
+	ensureDesignDirs(cwd);
+
+	const designDir = getDesignDir(cwd);
+	const created: string[] = [];
+
+	const files: { path: string; content: string; label: string }[] = [
+		{ path: join(designDir, "design.md"), content: DEFAULT_DESIGN_MD, label: "design.md" },
+		{ path: join(designDir, "components.html"), content: DEFAULT_COMPONENTS_HTML, label: "components.html" },
+		{ path: join(designDir, "layout.html"), content: DEFAULT_LAYOUT_HTML, label: "layout.html" },
+	];
+
+	for (const f of files) {
+		if (!existsSync(f.path)) {
+			writeFileSync(f.path, f.content);
+			created.push(f.label);
+		}
 	}
 
-	const layoutPath = join(designDir, "layout.html");
-	if (!existsSync(layoutPath)) {
-		writeFileSync(layoutPath, DEFAULT_LAYOUT_HTML);
-	}
+	return { alreadyInitialized: false, created };
 }
 
 export function listScreens(cwd: string = process.cwd()): Screen[] {

@@ -8,6 +8,7 @@ import {
 	deleteScreen,
 	getConventions,
 	scaffoldDesignDir,
+	isProjectInitialized,
 	getDesignMd,
 	writeDesignMd,
 	writeLayoutHtml,
@@ -63,12 +64,23 @@ export function createMcpServer(): McpServer {
 			inputSchema: {},
 		},
 		tracked("init_project", () => {
-			scaffoldDesignDir();
+			if (isProjectInitialized()) {
+				return {
+					content: [
+						{
+							type: "text",
+							text: "Project already initialized. No files were created or overwritten.",
+						},
+					],
+				};
+			}
+			const result = scaffoldDesignDir();
+			const createdList = result.created.length > 0 ? result.created.join(", ") : "nothing (defaults already present)";
 			return {
 				content: [
 					{
 						type: "text",
-						text: "Project initialized. Default design.md, components.html, and layout.html created.",
+						text: `Project initialized. Created: ${createdList}.`,
 					},
 				],
 			};
@@ -184,6 +196,15 @@ export function createMcpServer(): McpServer {
 					isError: true,
 				};
 			}
+			const markerCheck = parseMarkers(html);
+			if (markerCheck.isErr()) {
+				return {
+					content: [
+						{ type: "text", text: `Marker error: ${markerCheck.match({ ok: () => "", err: (e) => e.message })}` },
+					],
+					isError: true,
+				};
+			}
 			return createScreen(name, html).match({
 				ok: () => ({
 					content: [
@@ -268,6 +289,15 @@ export function createMcpServer(): McpServer {
 				const newContent = [...before, ...html.split("\n"), ...after].join(
 					"\n",
 				);
+				const partialCheck = parseMarkers(newContent);
+				if (partialCheck.isErr()) {
+					return {
+						content: [
+							{ type: "text", text: `Marker error: ${partialCheck.match({ ok: () => "", err: (e) => e.message })}` },
+						],
+						isError: true,
+					};
+				}
 				return updateScreen(name, newContent).match({
 					ok: () => ({
 						content: [
@@ -282,6 +312,15 @@ export function createMcpServer(): McpServer {
 						isError: true,
 					}),
 				});
+			}
+			const fullCheck = parseMarkers(html);
+			if (fullCheck.isErr()) {
+				return {
+					content: [
+						{ type: "text", text: `Marker error: ${fullCheck.match({ ok: () => "", err: (e) => e.message })}` },
+					],
+					isError: true,
+				};
 			}
 			return updateScreen(name, html).match({
 				ok: () => ({
@@ -352,7 +391,7 @@ export function createMcpServer(): McpServer {
 			const summary = components.map((c) => ({
 				name: c.name,
 				variant: c.variant,
-				props: Object.keys(c.props).filter((k) => k !== "variant"),
+				props: c.props,
 				slots: c.slots,
 			}));
 			return {
@@ -402,15 +441,12 @@ export function createMcpServer(): McpServer {
 					isError: true,
 				};
 			}
-			const props = Object.entries(component.props)
-				.filter(([k]) => k !== "variant")
-				.map(([k, v]) => `${k}="${v}"`)
-				.join(" ");
-			const slots =
-				component.slots.length > 0
-					? `\nSlots to fill: ${component.slots.join(", ")}`
-					: "";
-			const result = `<!-- ${component.name}${component.variant ? `:${component.variant}` : ""} ${props} -->\n${component.html}${slots}`;
+			const label = component.variant
+				? `${component.name}:${component.variant}`
+				: component.name;
+			const propsLine = component.props.length > 0 ? `\nProps: ${component.props.join(", ")}` : "";
+			const slotsLine = component.slots.length > 0 ? `\nSlots: ${component.slots.join(", ")}` : "";
+			const result = `Component: ${label}${propsLine}${slotsLine}\n\nHTML:\n${component.html}`;
 			return {
 				content: [{ type: "text", text: result }],
 			};
@@ -502,32 +538,57 @@ export function createMcpServer(): McpServer {
 		{
 			title: "Upsert Component",
 			description:
-				"Create or replace a single component block in components.html. Keyed by name (and optional variant). Pass the inner HTML only — the start/end markers are generated for you.",
+				"Register or replace a reusable component. Pass only the inner HTML — never write start/end markers yourself; the server adds them. Use {{prop_name}} placeholders for text props (declare each in props) and <!-- slot:name --> markers for content slots (declare each in slots). Do not pass full HTML documents.\n\nGood example:\nupsert_component({\n  name: \"info-card\",\n  props: [\"title\", \"body\", \"icon\"],\n  html: '<div class=\"...\">\\n  <i data-lucide=\"{{icon}}\"></i>\\n  <p>{{title}}</p>\\n  <p>{{body}}</p>\\n</div>'\n})",
 			inputSchema: {
 				name: z
 					.string()
-					.describe("Component name (identifier, e.g. button, card, lifecycle-bar)"),
-				html: z
-					.string()
-					.describe(
-						"Inner HTML for the component. May use {{prop}} placeholders and <!-- slot:name --> markers.",
-					),
+					.describe("Kebab-case identifier (e.g. \"button\", \"info-card\")."),
 				variant: z
 					.string()
 					.optional()
-					.describe("Optional variant key (e.g. primary, secondary)"),
+					.describe("Optional variant key (e.g. \"primary\", \"secondary\")."),
+				props: z
+					.array(z.string())
+					.optional()
+					.describe(
+						"Declared text-prop names referenced via {{name}} in html. Every {{name}} in html must appear here.",
+					),
+				slots: z
+					.array(z.string())
+					.optional()
+					.describe(
+						"Declared slot names referenced via <!-- slot:name --> in html. Every slot marker in html must appear here.",
+					),
+				html: z
+					.string()
+					.describe(
+						"INNER html only — a component fragment. Do NOT include <!-- name:start --> / <!-- name:end --> markers (server adds them) or full-document tags (<html>, <head>, <body>, <script>).",
+					),
 			},
 		},
-		tracked("upsert_component", ({ name, html, variant }) => {
-			return upsertComponent({ name, html, variant }).match({
-				ok: ({ created }) => ({
-					content: [
-						{
-							type: "text" as const,
-							text: `Component "${variant ? `${name}:${variant}` : name}" ${created ? "created" : "replaced"}.`,
-						},
-					],
-				}),
+		tracked("upsert_component", ({ name, html, variant, props, slots }) => {
+			const propsArr = Array.isArray(props) ? (props as string[]) : [];
+			const slotsArr = Array.isArray(slots) ? (slots as string[]) : [];
+			return upsertComponent({
+				name: name as string,
+				html: html as string,
+				variant: variant as string | undefined,
+				props: propsArr,
+				slots: slotsArr,
+			}).match({
+				ok: ({ created, warnings }) => {
+					const label = variant ? `${name}:${variant}` : name;
+					const warnText =
+						warnings.length > 0 ? `\nWarnings:\n- ${warnings.join("\n- ")}` : "";
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: `Component "${label}" ${created ? "created" : "replaced"}.${warnText}`,
+							},
+						],
+					};
+				},
 				err: (e) => ({
 					content: [{ type: "text" as const, text: e.message }],
 					isError: true,
