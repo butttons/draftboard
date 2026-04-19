@@ -1,10 +1,12 @@
 import { addListener } from "./watcher";
+import { addActivityListener } from "./mcp-activity";
 
 const encoder = new TextEncoder();
 
 export function createSSEStream(): ReadableStream {
   let controller: ReadableStreamDefaultController | null = null;
-  let removeListener: (() => void) | null = null;
+  let removeFileListener: (() => void) | null = null;
+  let removeActivityListener: (() => void) | null = null;
 
   return new ReadableStream({
     start(ctrl) {
@@ -14,17 +16,29 @@ export function createSSEStream(): ReadableStream {
       controller.enqueue(encoder.encode("data: {\"type\":\"connected\"}\n\n"));
 
       // Listen for file changes
-      removeListener = addListener((event) => {
+      removeFileListener = addListener((event) => {
         if (controller) {
           const data = JSON.stringify(event);
           controller.enqueue(encoder.encode(`data: ${data}\n\n`));
         }
       });
+
+      // Listen for MCP activity
+      removeActivityListener = addActivityListener((activity) => {
+        if (controller) {
+          const data = JSON.stringify({ type: "mcp_activity", activity });
+          controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+        }
+      });
     },
     cancel() {
-      if (removeListener) {
-        removeListener();
-        removeListener = null;
+      if (removeFileListener) {
+        removeFileListener();
+        removeFileListener = null;
+      }
+      if (removeActivityListener) {
+        removeActivityListener();
+        removeActivityListener = null;
       }
       controller = null;
     },

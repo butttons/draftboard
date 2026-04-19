@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { screensQueryOptions } from "#/server/queries";
 import { deleteScreenFn } from "#/server/functions";
+import McpStatusBadge from "./McpStatusBadge";
+import McpSetupButton from "./McpSetupButton";
 
 export default function Sidebar() {
   const { data: screens = [] } = useQuery(screensQueryOptions());
@@ -123,6 +125,11 @@ export default function Sidebar() {
         {screens.length === 0 && (
           <p className="px-3 py-2 text-sm text-zinc-400">No screens yet</p>
         )}
+      </div>
+
+      <div className="p-3 border-t border-zinc-200 flex items-center gap-2">
+        <McpStatusBadge />
+        <McpSetupButton />
       </div>
     </aside>
   );

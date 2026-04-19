@@ -14,3 +14,6 @@ todos.json
 mcp-todos.json
 .playwright-cli
 .pi/design
+
+# dora code context index
+.dora/

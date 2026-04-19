@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { Result } from "better-result";
 import { listScreens, getScreen, createScreen, updateScreen, deleteScreen, renameScreen, getDesignMd, getComponentsHtml, getLayoutHtml, writeDesignMd, writeComponentsHtml, writeLayoutHtml } from "./fs";
 import { validateScreenName } from "./validation";
+import { getRecentActivities, type McpActivity } from "./mcp-activity";
 
 export type Screen = {
   name: string;
@@ -76,3 +77,9 @@ export const saveLayoutHtml = createServerFn({ method: "POST" })
 export function isValidScreenName(name: string): boolean {
   return validateScreenName(name);
 }
+
+export const fetchMcpActivities = createServerFn({ method: "GET" }).handler(
+  async (): Promise<McpActivity[]> => {
+    return getRecentActivities();
+  },
+);

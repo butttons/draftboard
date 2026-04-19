@@ -1,9 +1,5 @@
 # Design Conventions
 
-## Preview
-- Screens are viewable at `/p/<screen-name>`
-- Example: `/p/login` shows the login screen
-
 ## Style: Lyra
 - Boxy and sharp
 - Use `rounded-none` or `rounded-sm` (not rounded-lg)

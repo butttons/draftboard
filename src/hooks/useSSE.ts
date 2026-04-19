@@ -1,13 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import type { McpActivity } from "#/server/mcp-activity";
 
 export function useSSE() {
   const queryClient = useQueryClient();
-  const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
     const es = new EventSource("/sse");
-    esRef.current = es;
 
     es.onmessage = (event) => {
       try {
@@ -26,6 +25,12 @@ export function useSSE() {
             break;
           case "layout_changed":
             queryClient.invalidateQueries({ queryKey: ["layoutHtml"] });
+            break;
+          case "mcp_activity":
+            queryClient.setQueryData<McpActivity[]>(
+              ["mcpActivities"],
+              (prev = []) => [data.activity, ...prev].slice(0, 50),
+            );
             break;
         }
       } catch {

@@ -10,6 +10,21 @@ import {
   scaffoldDesignDir,
 } from "./fs";
 import { validateScreenName } from "./validation";
+import { recordActivity, type McpAction } from "./mcp-activity";
+
+function tracked<T extends { name?: string }[], R>(
+  action: McpAction,
+  fn: (...args: T) => R,
+): (...args: T) => R {
+  return (...args: T): R => {
+    const start = Date.now();
+    const result = fn(...args);
+    const duration = Date.now() - start;
+    const screenName = args[0]?.name;
+    recordActivity(action, screenName, duration);
+    return result;
+  };
+}
 
 export function createMcpServer(): McpServer {
   const server = new McpServer({
@@ -25,7 +40,7 @@ export function createMcpServer(): McpServer {
         "Initialize the .pi/design directory with default design.md, components.html, and layout.html. Call this once before using other tools if the project is new.",
       inputSchema: {},
     },
-    () => {
+    tracked("init_project", () => {
       scaffoldDesignDir();
       return {
         content: [
@@ -35,7 +50,7 @@ export function createMcpServer(): McpServer {
           },
         ],
       };
-    },
+    }),
   );
 
   server.registerTool(
@@ -46,12 +61,12 @@ export function createMcpServer(): McpServer {
         "List all wireframe screens with their names, paths, and last updated timestamps.",
       inputSchema: {},
     },
-    () => {
+    tracked("list_screens", () => {
       const screens = listScreens();
       return {
         content: [{ type: "text", text: JSON.stringify(screens) }],
       };
-    },
+    }),
   );
 
   server.registerTool(
@@ -80,7 +95,7 @@ export function createMcpServer(): McpServer {
           ),
       },
     },
-    ({ name, start, end }) => {
+    tracked("get_screen", ({ name, start, end }) => {
       if (start !== undefined || end !== undefined) {
         const screen = getScreen(name);
         if (!screen) {
@@ -117,7 +132,7 @@ export function createMcpServer(): McpServer {
         };
       }
       return { content: [{ type: "text", text: JSON.stringify(screen) }] };
-    },
+    }),
   );
 
   server.registerTool(
@@ -131,7 +146,7 @@ export function createMcpServer(): McpServer {
         html: z.string().describe("The HTML content for the screen"),
       },
     },
-    ({ name, html }) => {
+    tracked("create_screen", ({ name, html }) => {
       if (!validateScreenName(name)) {
         return {
           content: [
@@ -154,7 +169,7 @@ export function createMcpServer(): McpServer {
           isError: true,
         }),
       });
-    },
+    }),
   );
 
   server.registerTool(
@@ -184,7 +199,7 @@ export function createMcpServer(): McpServer {
           ),
       },
     },
-    ({ name, html, start, end }) => {
+    tracked("update_screen", ({ name, html, start, end }) => {
       if (start !== undefined || end !== undefined) {
         const screen = getScreen(name);
         if (!screen) {
@@ -249,7 +264,7 @@ export function createMcpServer(): McpServer {
           isError: true,
         }),
       });
-    },
+    }),
   );
 
   server.registerTool(
@@ -261,7 +276,7 @@ export function createMcpServer(): McpServer {
         name: z.string().describe("The screen name (kebab-case)"),
       },
     },
-    ({ name }) => {
+    tracked("delete_screen", ({ name }) => {
       return deleteScreen(name).match({
         ok: () => ({
           content: [
@@ -273,7 +288,7 @@ export function createMcpServer(): McpServer {
           isError: true,
         }),
       });
-    },
+    }),
   );
 
   server.registerTool(
@@ -284,11 +299,11 @@ export function createMcpServer(): McpServer {
         "Get the design conventions (design.md) and canonical components (components.html) concatenated. Call this before generating screens to understand the project's design system.",
       inputSchema: {},
     },
-    () => {
+    tracked("get_conventions", () => {
       return {
         content: [{ type: "text", text: getConventions() }],
       };
-    },
+    }),
   );
 
   return server;
