@@ -69,6 +69,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "esbuild": "^0.28.0",
     "jsdom": "^28.1.0",
     "portless": "^0.10.3",
     "typescript": "^5.7.2",
