@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap,
@@ -9,10 +8,16 @@ import {
   Trash2,
   BookOpen,
   Play,
-  X,
 } from "lucide-react";
 import { fetchMcpActivities } from "#/server/functions";
 import type { McpActivity, McpAction } from "#/server/mcp-activity";
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "#/components/ui/popover";
 
 const actionIcons: Record<McpAction, typeof Zap> = {
   init_project: Play,
@@ -78,7 +83,6 @@ function ActivityItem({ activity }: { activity: McpActivity }) {
 }
 
 export default function McpStatusBadge() {
-  const [isOpen, setIsOpen] = useState(false);
   const { data: activities = [] } = useQuery({
     queryKey: ["mcpActivities"],
     queryFn: fetchMcpActivities,
@@ -89,10 +93,9 @@ export default function McpStatusBadge() {
     activities.length > 0 &&
     Date.now() - new Date(activities[0].timestamp).getTime() < 5000;
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
+  return (
+    <Popover>
+      <PopoverTrigger
         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
           hasRecent
             ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
@@ -110,51 +113,42 @@ export default function McpStatusBadge() {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
           </span>
         )}
-      </button>
-    );
-  }
+      </PopoverTrigger>
+      <PopoverContent side="top" align="start" className="w-80 p-0">
+        <PopoverHeader className="px-4 py-3 border-b border-zinc-100">
+          <PopoverTitle className="flex items-center gap-2 text-sm">
+            <Zap size={14} className="text-zinc-500" />
+            MCP Activity
+          </PopoverTitle>
+        </PopoverHeader>
 
-  return (
-    <div className="absolute bottom-full left-0 mb-2 w-80 bg-white rounded-xl shadow-lg border border-zinc-200 overflow-hidden z-50">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100">
-        <div className="flex items-center gap-2">
-          <Zap size={14} className="text-zinc-500" />
-          <span className="text-sm font-medium text-zinc-900">MCP Activity</span>
+        <div className="max-h-80 overflow-y-auto">
+          {activities.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <Zap size={24} className="mx-auto text-zinc-300 mb-2" />
+              <p className="text-sm text-zinc-500">No MCP activity yet</p>
+              <p className="text-xs text-zinc-400 mt-1">
+                Agent actions will appear here
+              </p>
+            </div>
+          ) : (
+            <div className="py-1">
+              {activities.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
+              ))}
+            </div>
+          )}
         </div>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="p-1 rounded-md hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600 transition"
-        >
-          <X size={14} />
-        </button>
-      </div>
 
-      <div className="max-h-80 overflow-y-auto">
-        {activities.length === 0 ? (
-          <div className="px-4 py-8 text-center">
-            <Zap size={24} className="mx-auto text-zinc-300 mb-2" />
-            <p className="text-sm text-zinc-500">No MCP activity yet</p>
-            <p className="text-xs text-zinc-400 mt-1">
-              Agent actions will appear here
+        {activities.length > 0 && (
+          <div className="px-4 py-2 border-t border-zinc-100 bg-zinc-50">
+            <p className="text-xs text-zinc-400 text-center">
+              {activities.length} action{activities.length !== 1 ? "s" : ""}{" "}
+              recorded
             </p>
           </div>
-        ) : (
-          <div className="py-1">
-            {activities.map((activity) => (
-              <ActivityItem key={activity.id} activity={activity} />
-            ))}
-          </div>
         )}
-      </div>
-
-      {activities.length > 0 && (
-        <div className="px-4 py-2 border-t border-zinc-100 bg-zinc-50">
-          <p className="text-xs text-zinc-400 text-center">
-            {activities.length} action{activities.length !== 1 ? "s" : ""}{" "}
-            recorded
-          </p>
-        </div>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }
