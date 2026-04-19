@@ -11,6 +11,7 @@ import {
 } from "./fs";
 import { validateScreenName } from "./validation";
 import { recordActivity, type McpAction } from "./mcp-activity";
+import { listComponents, getComponent, getComponentNames } from "./components";
 
 function tracked<T extends { name?: string }[], R>(
   action: McpAction,
@@ -331,6 +332,70 @@ export function createMcpServer(): McpServer {
 ${conventions}`;
       return {
         content: [{ type: "text", text: response }],
+      };
+    }),
+  );
+
+  server.registerTool(
+    "list_components",
+    {
+      title: "List Components",
+      description:
+        "List all available UI components with their names, variants, props, and slots. Use get_component to get the HTML for a specific one.",
+      inputSchema: {},
+    },
+    tracked("list_components", () => {
+      const components = listComponents();
+      const summary = components.map((c) => ({
+        name: c.name,
+        variant: c.variant,
+        props: Object.keys(c.props).filter((k) => k !== "variant"),
+        slots: c.slots,
+      }));
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(summary, null, 2),
+        }],
+      };
+    }),
+  );
+
+  server.registerTool(
+    "get_component",
+    {
+      title: "Get Component",
+      description:
+        'Get the HTML snippet for a component. Returns the HTML with {{prop}} placeholders and <!-- slot:name --> markers. Replace {{prop}} values and fill slots with content.',
+      inputSchema: {
+        name: z.string().describe("Component name: button, input, card, empty, row, badge, avatar, field, nav"),
+        variant: z.string().optional().describe("Variant if applicable (e.g., primary, secondary, success, sm, lg)"),
+      },
+    },
+    tracked("get_component", ({ name, variant }) => {
+      const component = getComponent(name, variant);
+      if (!component) {
+        const available = listComponents()
+          .map((c) => (c.variant ? `${c.name}:${c.variant}` : c.name))
+          .join(", ");
+        return {
+          content: [{
+            type: "text",
+            text: `Component "${name}"${variant ? ` with variant "${variant}"` : ""} not found. Available: ${available}`,
+          }],
+          isError: true,
+        };
+      }
+      const props = Object.entries(component.props)
+        .filter(([k]) => k !== "variant")
+        .map(([k, v]) => `${k}="${v}"`)
+        .join(" ");
+      const slots = component.slots.length > 0
+        ? `\nSlots to fill: ${component.slots.join(", ")}`
+        : "";
+      const result = `<!-- ${component.name}${component.variant ? `:${component.variant}` : ""} ${props} -->\n${component.html}${slots}`;
+      return {
+        content: [{ type: "text", text: result }],
       };
     }),
   );
