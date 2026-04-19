@@ -131,14 +131,15 @@ async function findFreePort(start: number): Promise<number> {
   });
 }
 
-const port = Number.isFinite(requestedPort) && requestedPort > 0
-  ? requestedPort
-  : await findFreePort(4321);
+const port =
+  Number.isFinite(requestedPort) && requestedPort > 0
+    ? requestedPort
+    : await findFreePort(4321);
 process.env.PORT = String(port);
 process.env.NITRO_PORT = String(port);
 
 console.log(`
-  @butttons/design
+  @butttons/draftboard
 
   App:  http://localhost:${port}
   MCP:  http://localhost:${port}/mcp

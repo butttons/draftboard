@@ -1,6 +1,6 @@
-# @butttons/design
+# @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/design` in a project folder. Reads and writes plain HTML and Markdown files in `.pi/design/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
+Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads and writes plain HTML and Markdown files in `.pi/design/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
 
 The filesystem is the source of truth. No database, no auth, no cloud sync. If you uninstall the package, your work is untouched and openable in any editor.
 
@@ -9,7 +9,7 @@ The filesystem is the source of truth. No database, no auth, no cloud sync. If y
 Run it in any project folder:
 
 ```bash
-bunx @butttons/design
+bunx @butttons/draftboard
 ```
 
 The CLI picks a free port (default `4321`), scaffolds `.pi/design/` if missing, prints the app URL and an MCP config snippet, and opens the browser.
@@ -51,6 +51,11 @@ Screen names are kebab-case, no path separators.
 ## Stack
 
 TanStack Start + React, Bun runtime, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
+
+## URLs
+
+- Dev: https://draftboard.dev.localhost
+- Prod: https://draftboard.localhost
 
 ## Development
 

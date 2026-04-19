@@ -19,15 +19,15 @@ function Help() {
       <div className="max-w-3xl mx-auto px-8 py-10 space-y-10">
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
-            How to use @butttons/design
+            How to use @butttons/draftboard
           </h1>
           <p className="text-sm text-zinc-600">
             A local wireframing tool. Your files live in{" "}
             <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
               .pi/design/
             </code>{" "}
-            in the folder where you ran the CLI. Edit them here, in your IDE,
-            or via an AI agent through MCP. All three stay in sync.
+            in the folder where you ran the CLI. Edit them here, in your IDE, or
+            via an AI agent through MCP. All three stay in sync.
           </p>
         </header>
 
@@ -53,8 +53,8 @@ function Help() {
           </Item>
           <Item label="Layout">
             Edit the HTML shell that wraps every preview (Tailwind CDN, icon
-            libs, resets). Applied at serve time, never written into your
-            screen files.
+            libs, resets). Applied at serve time, never written into your screen
+            files.
           </Item>
           <Item label="Screens">
             Every file in{" "}
@@ -106,7 +106,7 @@ function Help() {
             . Add it to your agent's MCP config:
           </p>
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
-{`{
+            {`{
   "mcpServers": {
     "design": { "url": "http://localhost:<port>/mcp" }
   }
@@ -145,16 +145,16 @@ function Help() {
         <Section title="CLI">
           <p className="text-sm text-zinc-600">Run in any project folder:</p>
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
-{`bunx @butttons/design              # auto-pick a free port starting at 4321
-bunx @butttons/design --port 5005  # pin a port
-PORT=5005 bunx @butttons/design    # or via env var
-bunx @butttons/design --open       # open the browser on start`}
+            {`bunx @butttons/draftboard              # auto-pick a free port starting at 4321
+bunx @butttons/draftboard --port 5005  # pin a port
+PORT=5005 bunx @butttons/draftboard    # or via env var
+bunx @butttons/draftboard --open       # open the browser on start`}
           </pre>
         </Section>
 
         <Section title="Where your work lives">
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
-{`<your-project>/
+            {`<your-project>/
 └── .pi/
     └── design/
         ├── design.md

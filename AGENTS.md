@@ -1,6 +1,6 @@
-# @butttons/design
+# @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/design` in a project folder. Reads/writes `.pi/design/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
+Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads/writes `.pi/design/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
 
 ## Project structure in user's folder
 
@@ -61,9 +61,14 @@ Name validation: kebab-case, no path separators, no `..`.
 
 When the MCP (or the user's editor, or git) writes a file in `.pi/design/`, chokidar fires, the server broadcasts `{ type: "screen_changed", name }` over SSE, the browser refetches that screen. Same for `design.md` and `components.html`. The canvas and editor must reflect external writes within ~200ms.
 
+## URLs
+
+- Dev: https://draftboard.dev.localhost
+- Prod: https://draftboard.localhost
+
 ## CLI entry
 
-`bin/@butttons/design.ts`:
+`bin/@butttons/draftboard.ts`:
 
 - Parses optional `[dir]` arg (defaults to `process.cwd()`)
 - Finds a free port (default 4321, fall back if taken)
@@ -117,7 +122,7 @@ Ship ~10 canonical blocks: button (primary/secondary), input, card, nav bar, emp
 
 ## Long-term constraints
 
-- Ship as a single npm package. `bunx @butttons/design` must work with zero config.
+- Ship as a single npm package. `bunx @butttons/draftboard` must work with zero config.
 - The MCP tool schema is the stable public API. Treat changes to it like breaking API changes.
 - Never store state that isn't recoverable from the files in `.pi/design/`. If the process dies or the npm package is uninstalled, the user's work is untouched and openable in any editor.
 - Keep dependencies minimal. Every added dep is future maintenance.

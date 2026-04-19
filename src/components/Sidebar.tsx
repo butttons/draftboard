@@ -31,7 +31,7 @@ export default function Sidebar() {
           to="/"
           className="text-sm font-semibold text-zinc-950 no-underline tracking-tight"
         >
-          @butttons/design
+          @butttons/draftboard
         </Link>
       </div>
 
