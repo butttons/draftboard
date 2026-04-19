@@ -1,6 +1,6 @@
 # @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads and writes plain HTML and Markdown files in `.pi/design/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
+Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads and writes plain HTML and Markdown files in `.draftboard/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
 
 The filesystem is the source of truth. No database, no auth, no cloud sync. If you uninstall the package, your work is untouched and openable in any editor.
 
@@ -12,18 +12,28 @@ Run it in any project folder:
 bunx @butttons/draftboard
 ```
 
-The CLI picks a free port (default `4321`), scaffolds `.pi/design/` if missing, prints the app URL and an MCP config snippet, and opens the browser.
+The CLI picks a free port (default `4321`), scaffolds `.draftboard/` if missing, prints the app URL and an MCP config snippet, and opens the browser.
+
+## CLI
+
+```
+Options:
+  -p, --port <number>   port number (default: 4321)
+  -d, --dir <path>      design directory (default: .draftboard)
+  --open                open browser on start
+```
+
+The directory can also be set via the `DRAFTBOARD_DIR` environment variable.
 
 ## Project layout
 
 ```
 <your-project>/
-└── .pi/
-    └── design/
-        ├── design.md         # conventions: spacing, type, colors, rules
-        ├── components.html   # canonical component blocks
-        └── screens/
-            └── *.html        # individual wireframe screens
+└── .draftboard/
+    ├── design.md         # conventions: spacing, type, colors, rules
+    ├── components.html   # canonical component blocks
+    └── screens/
+        └── *.html        # individual wireframe screens
 ```
 
 ## Routes
@@ -50,7 +60,7 @@ Screen names are kebab-case, no path separators.
 
 ## Stack
 
-TanStack Start + React, Bun runtime, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
+TanStack Start + React, Bun runtime, Commander for CLI, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
 
 ## URLs
 

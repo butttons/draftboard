@@ -24,7 +24,7 @@ function Help() {
           <p className="text-sm text-zinc-600">
             A local wireframing tool. Your files live in{" "}
             <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
-              .pi/design/
+              .draftboard/
             </code>{" "}
             in the folder where you ran the CLI. Edit them here, in your IDE, or
             via an AI agent through MCP. All three stay in sync.
@@ -59,7 +59,7 @@ function Help() {
           <Item label="Screens">
             Every file in{" "}
             <code className="px-1 py-0.5 rounded bg-zinc-100 text-zinc-800 text-xs">
-              .pi/design/screens/
+              .draftboard/screens/
             </code>
             . Hover a screen to reveal the delete button.
           </Item>
@@ -147,7 +147,8 @@ function Help() {
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
             {`bunx @butttons/draftboard              # auto-pick a free port starting at 4321
 bunx @butttons/draftboard --port 5005  # pin a port
-PORT=5005 bunx @butttons/draftboard    # or via env var
+bunx @butttons/draftboard --dir .mydir # custom directory
+DRAFTBOARD_DIR=.mydir bunx @butttons/draftboard # or via env var
 bunx @butttons/draftboard --open       # open the browser on start`}
           </pre>
         </Section>
@@ -155,13 +156,12 @@ bunx @butttons/draftboard --open       # open the browser on start`}
         <Section title="Where your work lives">
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
             {`<your-project>/
-└── .pi/
-    └── design/
-        ├── design.md
-        ├── components.html
-        ├── layout.html
-        └── screens/
-            └── *.html`}
+└── .draftboard/
+    ├── design.md
+    ├── components.html
+    ├── layout.html
+    └── screens/
+        └── *.html`}
           </pre>
           <p className="text-sm text-zinc-600">
             Plain files. No database. Commit them to git, open them in any

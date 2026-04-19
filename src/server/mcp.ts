@@ -40,7 +40,7 @@ export function createMcpServer(): McpServer {
     {
       title: "Init Project",
       description:
-        "Initialize the .pi/design directory with default design.md, components.html, and layout.html. Call this once before using other tools if the project is new.",
+        "Initialize the design directory with default design.md, components.html, and layout.html. Call this once before using other tools if the project is new.",
       inputSchema: {},
     },
     tracked("init_project", () => {

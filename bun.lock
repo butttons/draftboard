@@ -22,6 +22,7 @@
         "chokidar": "^5.0.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "commander": "^14.0.3",
         "lucide-react": "^1.8.0",
         "nitro": "^3.0.260415-beta",
         "react": "^19.2.0",

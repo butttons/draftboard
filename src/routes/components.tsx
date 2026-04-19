@@ -196,7 +196,7 @@ function ComponentsPreview() {
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">Component Library</h1>
           <p className="text-sm text-zinc-600 mt-1">
             Copy-paste these snippets into your screens. Edit{" "}
-            <code className="px-1 py-0.5 rounded bg-zinc-100 text-xs">.pi/design/components.html</code>{" "}
+            <code className="px-1 py-0.5 rounded bg-zinc-100 text-xs">.draftboard/components.html</code>{" "}
             to customize.
           </p>
         </header>

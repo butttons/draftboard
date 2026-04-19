@@ -1,12 +1,13 @@
 # @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads/writes `.pi/design/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
+Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads/writes `.draftboard/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
+
+The directory is configurable via `--dir` flag or `DRAFTBOARD_DIR` env var.
 
 ## Project structure in user's folder
 
 <user-project>/
-└── .pi/
-└── design/
+└── .draftboard/
 ├── design.md # design conventions (spacing, colors, type, rules)
 ├── components.html # canonical component blocks (button, card, nav, etc.)
 └── screens/
@@ -24,6 +25,7 @@ Everything is plain files on disk. No database. The filesystem is the source of 
 - @modelcontextprotocol/sdk for the MCP server
 - Server-Sent Events for pushing file changes to the browser
 - Tailwind for styling
+- Commander for CLI parsing
 
 No database, no auth, no ORM.
 
@@ -38,15 +40,15 @@ Persistent left sidebar on all routes: list of screens, links to design.md and c
 
 ## Server responsibilities
 
-- Read/write files in `.pi/design/` on the cwd where the CLI was launched
-- Scaffold `.pi/design/` with starter `design.md` + `components.html` if missing
-- Watch `.pi/design/` with chokidar, broadcast changes over SSE to connected browsers
+- Read/write files in the design directory on the cwd where the CLI was launched
+- Scaffold the design directory with starter `design.md` + `components.html` if missing
+- Watch the design directory with chokidar, broadcast changes over SSE to connected browsers
 - Serve a `/mcp` endpoint (HTTP+SSE transport) that exposes tools to agents
 - Serve the built frontend
 
 ## MCP tools to expose
 
-Keep the surface small. Every tool operates on files in `.pi/design/` of the cwd.
+Keep the surface small. Every tool operates on files in the design directory of the cwd.
 
 - `list_screens()` → `[{ name, path, updated_at }]`
 - `get_screen(name)` → `{ name, html }`
@@ -59,7 +61,7 @@ Name validation: kebab-case, no path separators, no `..`.
 
 ## Live updates
 
-When the MCP (or the user's editor, or git) writes a file in `.pi/design/`, chokidar fires, the server broadcasts `{ type: "screen_changed", name }` over SSE, the browser refetches that screen. Same for `design.md` and `components.html`. The canvas and editor must reflect external writes within ~200ms.
+When the MCP (or the user's editor, or git) writes a file in the design directory, chokidar fires, the server broadcasts `{ type: "screen_changed", name }` over SSE, the browser refetches that screen. Same for `design.md` and `components.html`. The canvas and editor must reflect external writes within ~200ms.
 
 ## URLs
 
@@ -68,13 +70,13 @@ When the MCP (or the user's editor, or git) writes a file in `.pi/design/`, chok
 
 ## CLI entry
 
-`bin/@butttons/draftboard.ts`:
+`bin/draftboard.ts` (Commander):
 
-- Parses optional `[dir]` arg (defaults to `process.cwd()`)
+- Options: `--port`, `--dir`, `--open`
 - Finds a free port (default 4321, fall back if taken)
 - Starts the server
 - Prints: the app URL, the MCP URL, and a copy-pasteable MCP config snippet
-- Opens the browser (optional, behind `--open` or auto on first run)
+- Opens the browser (optional, behind `--open`)
 
 ## Canvas view
 
@@ -124,5 +126,5 @@ Ship ~10 canonical blocks: button (primary/secondary), input, card, nav bar, emp
 
 - Ship as a single npm package. `bunx @butttons/draftboard` must work with zero config.
 - The MCP tool schema is the stable public API. Treat changes to it like breaking API changes.
-- Never store state that isn't recoverable from the files in `.pi/design/`. If the process dies or the npm package is uninstalled, the user's work is untouched and openable in any editor.
+- Never store state that isn't recoverable from the files in the design directory. If the process dies or the npm package is uninstalled, the user's work is untouched and openable in any editor.
 - Keep dependencies minimal. Every added dep is future maintenance.
