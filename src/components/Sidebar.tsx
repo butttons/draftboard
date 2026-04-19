@@ -8,6 +8,7 @@ import {
   Trash2,
   Layers,
   HelpCircle,
+  ExternalLink,
 } from "lucide-react";
 import { screensQueryOptions } from "#/server/queries";
 import { deleteScreenFn } from "#/server/functions";
@@ -126,6 +127,17 @@ export default function Sidebar() {
       <div className="p-3 border-t border-zinc-200 flex items-center gap-2">
         <McpStatusBadge />
         <McpSetupButton />
+      </div>
+      <div className="p-3 border-t border-zinc-200">
+        <a
+          href="https://github.com/butttons/draftboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 transition"
+        >
+          <ExternalLink size={14} />
+          <span>butttons/draftboard</span>
+        </a>
       </div>
     </aside>
   );

@@ -16,7 +16,7 @@ The CLI picks a free port (default `4321`), scaffolds `.draftboard/` if missing,
 
 ## With portless
 
-For nicer local URLs, use [portless](https://github.com/butttons/portless):
+For nicer local URLs, use [portless](https://github.com/vercel-labs/portless):
 
 ```bash
 portless draftboard npx @butttons/draftboard
@@ -78,9 +78,6 @@ TanStack Start + React, Node.js runtime, Commander for CLI, Monaco editor, choki
 ## Development
 
 ```bash
-npm install
-npm run dev        # vite dev at draftboard.dev.localhost
-npm run build
-npm run check      # biome lint + format
-npm run test       # vitest
+pnpm install
+pnpm dev        # vite dev at draftboard.dev.localhost
 ```
