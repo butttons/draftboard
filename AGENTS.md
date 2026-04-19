@@ -33,8 +33,10 @@ No database, no auth, no ORM.
 
 - `/` — Canvas. Grid of screen thumbnails.
 - `/s/:name` — Editor. Monaco (HTML) on the left, live iframe preview on the right.
+- `/p/:name` — Standalone screen preview with live reload.
+- `/c/:name` — Standalone component preview (iframed by `/components`), supports `?variant=`.
 - `/design` — Monaco editing `design.md`.
-- `/components` — Split view editing `components.html`.
+- `/components` — Rendered library of blocks parsed from `components.html`; each block is iframed from `/c/:name` so styles don't bleed.
 
 Persistent left sidebar on all routes: list of screens, links to design.md and components.html.
 
@@ -46,18 +48,67 @@ Persistent left sidebar on all routes: list of screens, links to design.md and c
 - Serve a `/mcp` endpoint (HTTP+SSE transport) that exposes tools to agents
 - Serve the built frontend
 
-## MCP tools to expose
+## MCP tools
 
-Keep the surface small. Every tool operates on files in the design directory of the cwd.
+Every tool operates on files in the design directory of the cwd. Screen names are kebab-case with no path separators or `..`. Component names allow dashes (`info-card`).
+
+**Project**
+
+- `init_project()` — scaffold `design.md`, `components.html`, `layout.html` if missing.
+- `get_conventions()` → design.md + formatted component catalog + layout, intended for a single read-before-generate call.
+
+**Screens**
 
 - `list_screens()` → `[{ name, path, updated_at }]`
-- `get_screen(name)` → `{ name, html }`
-- `create_screen(name, html)` → writes `screens/<name>.html`, errors if exists
-- `update_screen(name, html)` → overwrites
-- `delete_screen(name)` → removes file
-- `get_conventions()` → returns `design.md` + `components.html` concatenated, so the agent can pull both in one call before generating
+- `get_screen(name, start?, end?)` → full HTML or a line-range slice `{ name, lines, start, end, total }`
+- `create_screen(name, html)` — errors if already exists
+- `update_screen(name, html, start?, end?)` — full rewrite or partial line-range patch
+- `delete_screen(name)`
+- `rename_screen({ from, to, update_links? })` — renames the file; when `update_links` is true (default), rewrites `<a href>` references in every other screen atomically and returns `{ renamed, links_updated: [{ screen_name, count }] }`.
 
-Name validation: kebab-case, no path separators, no `..`.
+**Design doc & layout** (global — changes affect every future generation)
+
+- `get_design_doc()` → raw design.md source for editing
+- `update_design_doc({ content })` — full-file replace of design.md
+- `update_layout({ content })` — full-file replace of layout.html
+
+**Components**
+
+- `list_components()` → `[{ name, variant?, props, slots }]`
+- `get_component(name, variant?)` → HTML snippet with `{{prop}}` placeholders and `<!-- slot:name -->` markers
+- `upsert_component({ name, html, variant? })` — create or replace a component block in components.html; markers are generated for you
+- `delete_component({ name, variant? })` — remove a component block
+
+**Markers inside screens**
+
+- `list_markers_in_screen({ name })` → every marker in source order with parsed props and line ranges
+- `replace_component_in_screen({ screen_name, marker_name, occurrence?, html })` — surgically replace the inner HTML of a marker block, preserving the start/end tags. `occurrence` is 0-indexed; negative values count from the end; `"all"` replaces every occurrence.
+
+**Validation & references**
+
+- `validate_screen({ name })` → `{ issues: [{ severity, line, message, marker? }] }`. Checks: off-palette colors/hex against design.md, bare component tags missing markers, unknown marker names (info only — page-layout markers are legitimate), malformed markers, dead `/p/*` links.
+- `validate_all_screens()` → `{ [screen_name]: issues[] }`.
+- `find_screens_using({ marker_name })` → `[{ screen_name, occurrences }]`. Use before editing or deleting a component.
+- `find_screens_linking_to({ screen_name })` → `[{ screen_name, occurrences }]`. Use before renaming or deleting a screen (though `rename_screen` handles the rewrite itself).
+
+## Marker format
+
+Every component inside a screen is wrapped in HTML comment markers so the tools above can find and edit them:
+
+```html
+<!-- button:start variant=primary label="Save" -->
+<button class="...">Save</button>
+<!-- button:end -->
+```
+
+Name resolution is by family: `<!-- button:start variant=primary -->` resolves against the `button` component regardless of the specific `button:primary` variant. Variants are just props.
+
+## Typical agent workflows
+
+- **Clean-room regenerate**: `init_project` → `get_conventions` → `create_screen` (repeat).
+- **Evolve style guide**: `get_design_doc` → `update_design_doc` → `validate_all_screens` → targeted `replace_component_in_screen` or `update_screen` calls on affected screens.
+- **Evolve a shared component**: `find_screens_using` to gauge blast radius → `upsert_component` → `validate_all_screens`.
+- **Rename a screen without breaking links**: `rename_screen({ from, to })` (update_links defaults to true).
 
 ## Live updates
 

@@ -48,7 +48,16 @@ This allows the AI to find and update specific components later using update_scr
 Use relative paths to link between screens:
 \`<a href="other-screen-name">Go to other screen</a>\`
 
-From \`/p/profile\`, this links to \`/p/other-screen-name\`. Use list_screens to see existing screens.
+From \`/p/profile\`, this links to \`/p/other-screen-name\`. Use list_screens to see existing screens. If you need to rename a screen without breaking links, use rename_screen (it rewrites href references across other screens atomically).
+
+## EDITING TOOLS BEYOND FULL REWRITES
+
+Prefer these over rewriting whole screens when appropriate:
+
+- **Edit one component inside a screen**: list_markers_in_screen(name) to find it, then replace_component_in_screen({ screen_name, marker_name, occurrence, html }). Supports \`occurrence: "all"\` for bulk edits and negative indexing from the end.
+- **Evolve the style guide**: get_design_doc / update_design_doc / update_layout for global edits. After changing these, run validate_all_screens to find stale screens.
+- **Evolve a shared component**: find_screens_using({ marker_name }) to gauge blast radius before upsert_component / delete_component. You can add new components at any name (e.g. "lifecycle-bar"); dashes are allowed.
+- **Lint before shipping**: validate_screen(name) flags off-palette colors, bare component tags missing markers, malformed markers, and dead \`/p/\*\` links.
 
 ## AVAILABLE COMPONENTS
 

@@ -49,27 +49,55 @@ The directory can also be set via the `DRAFTBOARD_DIR` environment variable.
 ## Routes
 
 - `/` — Canvas. Grid of live screen thumbnails.
-- `/s/:name` — Editor. Monaco on the left, live iframe preview on the right.
-- `/p/:name` — Standalone preview with live reload.
+- `/s/:name` — Editor. Monaco + live iframe preview.
+- `/p/:name` — Standalone screen preview with live reload.
+- `/c/:name` — Standalone component preview with live reload (supports `?variant=`).
 - `/design` — Edit `design.md`.
-- `/components` — Edit `components.html`.
+- `/components` — Rendered library of blocks parsed from `components.html`.
 
 External writes (from an agent, your editor, or git) stream into the browser over SSE and reflect within ~200ms.
 
 ## MCP
 
-The server exposes an MCP endpoint at `/mcp` with a small tool surface:
+The server exposes an MCP endpoint at `/mcp`. Tools fall into five groups:
 
-- `list_screens()` — list all screens
-- `get_screen(name)` — get screen HTML
-- `create_screen(name, html)` — create a new screen
-- `update_screen(name, html)` — update screen HTML
-- `delete_screen(name)` — delete a screen
-- `get_conventions()` — returns `design.md` + `components.html` concatenated
-- `list_components()` — list available UI components
-- `get_component(name, variant?)` — get a component HTML snippet
+### Project
 
-Screen names are kebab-case, no path separators.
+- `init_project()` — scaffold `design.md`, `components.html`, `layout.html` if missing.
+- `get_conventions()` — read-only bundle of `design.md` + component catalog + layout.
+
+### Screens
+
+- `list_screens()` — list all screens with paths and `updated_at`.
+- `get_screen(name, start?, end?)` — full HTML or a line range.
+- `create_screen(name, html)` — create; errors if it already exists.
+- `update_screen(name, html, start?, end?)` — full rewrite or line-range patch.
+- `delete_screen(name)` — remove a screen.
+- `rename_screen(from, to, update_links?)` — atomic rename with `<a href>` rewriting across other screens.
+
+### Design doc & layout
+
+- `get_design_doc()` — raw `design.md` contents for editing.
+- `update_design_doc(content)` — full-file replace of `design.md`.
+- `update_layout(content)` — full-file replace of `layout.html`.
+
+### Components
+
+- `list_components()` — component catalog with variants, props, slots.
+- `get_component(name, variant?)` — HTML snippet with `{{prop}}` placeholders and `<!-- slot:name -->` markers.
+- `upsert_component(name, html, variant?)` — create or replace a component block in `components.html`.
+- `delete_component(name, variant?)` — remove a component block.
+
+### Markers, validation, references
+
+- `list_markers_in_screen(name)` — every `<!-- name:start ... -->` in order with parsed props and line ranges.
+- `replace_component_in_screen(screen_name, marker_name, occurrence?, html)` — surgically replace the inner HTML of a marker block. `occurrence` can be a 0-indexed number (negative counts from the end) or `"all"`.
+- `validate_screen(name)` — lint a screen against `design.md`: off-palette colors, bare component tags missing markers, unknown marker names, malformed markers, dead `/p/*` links.
+- `validate_all_screens()` — run the linter across every screen.
+- `find_screens_using(marker_name)` — screens that contain at least one marker with the given name. Use before editing or deleting a component.
+- `find_screens_linking_to(screen_name)` — screens with an `<a href>` pointing at the given screen. Use before renaming or deleting.
+
+Screen names are kebab-case, no path separators. Component names accept dashes (`info-card`).
 
 ## Stack
 

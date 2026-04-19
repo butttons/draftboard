@@ -1,4 +1,4 @@
-import { getScreen, getLayoutHtml } from "./fs";
+import { getScreen } from "./fs";
 import { getComponent, renderComponent } from "./components";
 
 const LIGHTWEIGHT_LAYOUT = `<!doctype html>
@@ -92,18 +92,18 @@ const COMPONENT_LAYOUT = `<!doctype html>
 </html>`;
 
 export function generateComponentPreviewHtml({
-	name,
-	variant,
+  name,
+  variant,
 }: {
-	name: string;
-	variant?: string;
+  name: string;
+  variant?: string;
 }): string {
-	const component = getComponent(name, variant);
-	if (!component) {
-		return errorHtml(variant ? `${name}:${variant}` : name);
-	}
-	const content = renderComponent(component);
-	return COMPONENT_LAYOUT.replace("{{content}}", content);
+  const component = getComponent(name, variant);
+  if (!component) {
+    return errorHtml(variant ? `${name}:${variant}` : name);
+  }
+  const content = renderComponent(component);
+  return COMPONENT_LAYOUT.replace("{{content}}", content);
 }
 
 function errorHtml(name: string): string {
