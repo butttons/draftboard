@@ -5,7 +5,9 @@ export type McpAction =
   | "create_screen"
   | "update_screen"
   | "delete_screen"
-  | "get_conventions";
+  | "get_conventions"
+  | "list_components"
+  | "get_component";
 
 export type McpActivity = {
   id: string;

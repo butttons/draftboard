@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { Result } from "better-result";
 import { listScreens, getScreen, createScreen, updateScreen, deleteScreen, renameScreen, getDesignMd, getComponentsHtml, getLayoutHtml, writeDesignMd, writeComponentsHtml, writeLayoutHtml } from "./fs";
 import { validateScreenName } from "./validation";
 import { getRecentActivities, type McpActivity } from "./mcp-activity";
@@ -22,26 +21,30 @@ export const fetchScreen = createServerFn({ method: "GET" })
 
 export const createScreenFn = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; html?: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return createScreen(data.name, data.html ?? "");
+  .handler(async ({ data }): Promise<void> => {
+    const result = createScreen(data.name, data.html ?? "");
+    if (result.isErr()) throw result.error;
   });
 
 export const updateScreenFn = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string; html: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return updateScreen(data.name, data.html);
+  .handler(async ({ data }): Promise<void> => {
+    const result = updateScreen(data.name, data.html);
+    if (result.isErr()) throw result.error;
   });
 
 export const deleteScreenFn = createServerFn({ method: "POST" })
   .inputValidator((data: { name: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return deleteScreen(data.name);
+  .handler(async ({ data }): Promise<void> => {
+    const result = deleteScreen(data.name);
+    if (result.isErr()) throw result.error;
   });
 
 export const renameScreenFn = createServerFn({ method: "POST" })
   .inputValidator((data: { oldName: string; newName: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return renameScreen(data.oldName, data.newName);
+  .handler(async ({ data }): Promise<void> => {
+    const result = renameScreen(data.oldName, data.newName);
+    if (result.isErr()) throw result.error;
   });
 
 export const fetchDesignMd = createServerFn({ method: "GET" }).handler(async (): Promise<string> => {
@@ -50,8 +53,9 @@ export const fetchDesignMd = createServerFn({ method: "GET" }).handler(async ():
 
 export const saveDesignMd = createServerFn({ method: "POST" })
   .inputValidator((data: { content: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return writeDesignMd(data.content);
+  .handler(async ({ data }): Promise<void> => {
+    const result = writeDesignMd(data.content);
+    if (result.isErr()) throw result.error;
   });
 
 export const fetchComponentsHtml = createServerFn({ method: "GET" }).handler(async (): Promise<string> => {
@@ -60,8 +64,9 @@ export const fetchComponentsHtml = createServerFn({ method: "GET" }).handler(asy
 
 export const saveComponentsHtml = createServerFn({ method: "POST" })
   .inputValidator((data: { content: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return writeComponentsHtml(data.content);
+  .handler(async ({ data }): Promise<void> => {
+    const result = writeComponentsHtml(data.content);
+    if (result.isErr()) throw result.error;
   });
 
 export const fetchLayoutHtml = createServerFn({ method: "GET" }).handler(async (): Promise<string> => {
@@ -70,8 +75,9 @@ export const fetchLayoutHtml = createServerFn({ method: "GET" }).handler(async (
 
 export const saveLayoutHtml = createServerFn({ method: "POST" })
   .inputValidator((data: { content: string }) => data)
-  .handler(async ({ data }): Promise<Result<void, Error>> => {
-    return writeLayoutHtml(data.content);
+  .handler(async ({ data }): Promise<void> => {
+    const result = writeLayoutHtml(data.content);
+    if (result.isErr()) throw result.error;
   });
 
 export function isValidScreenName(name: string): boolean {

@@ -11,17 +11,19 @@ import {
 } from "./fs";
 import { validateScreenName } from "./validation";
 import { recordActivity, type McpAction } from "./mcp-activity";
-import { listComponents, getComponent, getComponentNames } from "./components";
+import { listComponents, getComponent } from "./components";
 
-function tracked<T extends { name?: string }[], R>(
+type ToolArgs = Record<string, unknown>;
+
+function tracked<TArgs extends ToolArgs, R>(
   action: McpAction,
-  fn: (...args: T) => R,
-): (...args: T) => R {
-  return (...args: T): R => {
+  fn: (args: TArgs) => R,
+): (args: TArgs) => R {
+  return (args: TArgs): R => {
     const start = Date.now();
-    const result = fn(...args);
+    const result = fn(args);
     const duration = Date.now() - start;
-    const screenName = args[0]?.name;
+    const screenName = typeof args.name === "string" ? args.name : undefined;
     recordActivity(action, screenName, duration);
     return result;
   };

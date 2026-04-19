@@ -6,7 +6,7 @@ import { screensQueryOptions } from "#/server/queries";
 import { createScreenFn, deleteScreenFn, isValidScreenName } from "#/server/functions";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { Card, CardContent, CardFooter } from "#/components/ui/card";
+import { Card, CardContent } from "#/components/ui/card";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {

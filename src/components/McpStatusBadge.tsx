@@ -8,6 +8,8 @@ import {
   Trash2,
   BookOpen,
   Play,
+  LayoutGrid,
+  Component,
 } from "lucide-react";
 import { fetchMcpActivities } from "#/server/functions";
 import type { McpActivity, McpAction } from "#/server/mcp-activity";
@@ -27,6 +29,8 @@ const actionIcons: Record<McpAction, typeof Zap> = {
   update_screen: Pencil,
   delete_screen: Trash2,
   get_conventions: BookOpen,
+  list_components: LayoutGrid,
+  get_component: Component,
 };
 
 const actionLabels: Record<McpAction, string> = {
@@ -37,6 +41,8 @@ const actionLabels: Record<McpAction, string> = {
   update_screen: "Updated screen",
   delete_screen: "Deleted screen",
   get_conventions: "Read conventions",
+  list_components: "Listed components",
+  get_component: "Read component",
 };
 
 function formatTime(iso: string): string {

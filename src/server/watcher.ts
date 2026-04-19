@@ -20,7 +20,7 @@ export function startWatcher(cwd: string = process.cwd()): void {
     },
   });
 
-  watcher.on("all", (event, filePath) => {
+  watcher.on("all", (_event, filePath) => {
     const relPath = filePath.replace(designPath + "/", "");
 
     let changeType: string;

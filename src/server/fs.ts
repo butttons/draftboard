@@ -128,9 +128,14 @@ export function updateScreenLines(
   const newLines = content.split("\n");
   const before = allLines.slice(0, start - 1);
   const after = allLines.slice(clampedEnd);
-  const result = [...before, ...newLines, ...after].join("\n");
+  const joined = [...before, ...newLines, ...after].join("\n");
 
-  return Result.try(() => writeFileSync(filePath, result));
+  try {
+    writeFileSync(filePath, joined);
+    return Result.ok(undefined);
+  } catch (e) {
+    return Result.err(e instanceof Error ? e.message : String(e));
+  }
 }
 
 export function createScreen(name: string, html: string, cwd: string = process.cwd()): Result<void, Error> {

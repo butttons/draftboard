@@ -36,7 +36,7 @@ function Code({ children }: { children: string }) {
 }
 
 function ComponentsPreview() {
-  const { data: content = "" } = useQuery(componentsHtmlQueryOptions());
+  useQuery(componentsHtmlQueryOptions());
 
   // Parse components from the HTML file
   const sections = [
