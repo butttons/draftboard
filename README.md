@@ -14,6 +14,16 @@ bunx @butttons/draftboard
 
 The CLI picks a free port (default `4321`), scaffolds `.draftboard/` if missing, prints the app URL and an MCP config snippet, and opens the browser.
 
+## With portless
+
+For nicer local URLs, use [portless](https://github.com/butttons/portless):
+
+```bash
+portless draftboard bunx @butttons/draftboard
+```
+
+This gives you `https://draftboard.localhost` instead of `http://localhost:4321`.
+
 ## CLI
 
 ```
@@ -40,6 +50,7 @@ The directory can also be set via the `DRAFTBOARD_DIR` environment variable.
 
 - `/` — Canvas. Grid of live screen thumbnails.
 - `/s/:name` — Editor. Monaco on the left, live iframe preview on the right.
+- `/p/:name` — Standalone preview with live reload.
 - `/design` — Edit `design.md`.
 - `/components` — Edit `components.html`.
 
@@ -49,12 +60,14 @@ External writes (from an agent, your editor, or git) stream into the browser ove
 
 The server exposes an MCP endpoint at `/mcp` with a small tool surface:
 
-- `list_screens()`
-- `get_screen(name)`
-- `create_screen(name, html)`
-- `update_screen(name, html)`
-- `delete_screen(name)`
+- `list_screens()` — list all screens
+- `get_screen(name)` — get screen HTML
+- `create_screen(name, html)` — create a new screen
+- `update_screen(name, html)` — update screen HTML
+- `delete_screen(name)` — delete a screen
 - `get_conventions()` — returns `design.md` + `components.html` concatenated
+- `list_components()` — list available UI components
+- `get_component(name, variant?)` — get a component HTML snippet
 
 Screen names are kebab-case, no path separators.
 
@@ -62,16 +75,11 @@ Screen names are kebab-case, no path separators.
 
 TanStack Start + React, Bun runtime, Commander for CLI, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
 
-## URLs
-
-- Dev: https://draftboard.dev.localhost
-- Prod: https://draftboard.localhost
-
 ## Development
 
 ```bash
 bun install
-bun run dev        # vite dev on :3000
+bun run dev        # vite dev at draftboard.dev.localhost
 bun run build
 bun run check      # biome lint + format
 bun run test       # vitest
