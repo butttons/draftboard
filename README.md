@@ -1,6 +1,6 @@
 # @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads and writes plain HTML and Markdown files in `.draftboard/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
+Local wireframing tool. Runs as `npx @butttons/draftboard` in a project folder. Reads and writes plain HTML and Markdown files in `.draftboard/`, and exposes an MCP server so AI agents can create and edit wireframes alongside you in the GUI.
 
 The filesystem is the source of truth. No database, no auth, no cloud sync. If you uninstall the package, your work is untouched and openable in any editor.
 
@@ -9,7 +9,7 @@ The filesystem is the source of truth. No database, no auth, no cloud sync. If y
 Run it in any project folder:
 
 ```bash
-bunx @butttons/draftboard
+npx @butttons/draftboard
 ```
 
 The CLI picks a free port (default `4321`), scaffolds `.draftboard/` if missing, prints the app URL and an MCP config snippet, and opens the browser.
@@ -19,7 +19,7 @@ The CLI picks a free port (default `4321`), scaffolds `.draftboard/` if missing,
 For nicer local URLs, use [portless](https://github.com/butttons/portless):
 
 ```bash
-portless draftboard bunx @butttons/draftboard
+portless draftboard npx @butttons/draftboard
 ```
 
 This gives you `https://draftboard.localhost` instead of `http://localhost:4321`.
@@ -73,14 +73,14 @@ Screen names are kebab-case, no path separators.
 
 ## Stack
 
-TanStack Start + React, Bun runtime, Commander for CLI, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
+TanStack Start + React, Node.js runtime, Commander for CLI, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.
 
 ## Development
 
 ```bash
-bun install
-bun run dev        # vite dev at draftboard.dev.localhost
-bun run build
-bun run check      # biome lint + format
-bun run test       # vitest
+npm install
+npm run dev        # vite dev at draftboard.dev.localhost
+npm run build
+npm run check      # biome lint + format
+npm run test       # vitest
 ```

@@ -1,6 +1,6 @@
 # @butttons/draftboard
 
-Local wireframing tool. Runs as `bunx @butttons/draftboard` in a project folder. Reads/writes `.draftboard/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
+Local wireframing tool. Runs as `npx @butttons/draftboard` in a project folder. Reads/writes `.draftboard/`. Exposes an MCP server so AI agents can create and edit wireframes alongside the human using the GUI.
 
 The directory is configurable via `--dir` flag or `DRAFTBOARD_DIR` env var.
 
@@ -124,7 +124,7 @@ Ship ~10 canonical blocks: button (primary/secondary), input, card, nav bar, emp
 
 ## Long-term constraints
 
-- Ship as a single npm package. `bunx @butttons/draftboard` must work with zero config.
+- Ship as a single npm package. `npx @butttons/draftboard` must work with zero config.
 - The MCP tool schema is the stable public API. Treat changes to it like breaking API changes.
 - Never store state that isn't recoverable from the files in the design directory. If the process dies or the npm package is uninstalled, the user's work is untouched and openable in any editor.
 - Keep dependencies minimal. Every added dep is future maintenance.

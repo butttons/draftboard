@@ -1,9 +1,11 @@
-#!/usr/bin/env bun
-
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { Command } from "commander";
+import packageJson from "../package.json";
+
+// Available at runtime after esbuild CJS compilation
+declare const __dirname: string;
 
 const DEFAULT_DESIGN_MD = `# Design Conventions
 
@@ -147,7 +149,7 @@ const program = new Command();
 program
 	.name("draftboard")
 	.description("Local wireframing tool with MCP server for AI agents")
-	.version("0.0.7")
+	.version(packageJson.version)
 	.option("-p, --port <number>", "port number (default: 4321)")
 	.option("-d, --dir <path>", "design directory (default: .draftboard)")
 	.option("--open", "open browser on start")
@@ -209,7 +211,7 @@ program
 
 		// Start server
 		await import(
-			join(import.meta.dirname, "..", ".output", "server", "index.mjs")
+			join(__dirname, "..", ".output", "server", "index.mjs")
 		);
 	});
 

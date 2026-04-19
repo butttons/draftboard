@@ -145,11 +145,11 @@ function Help() {
         <Section title="CLI">
           <p className="text-sm text-zinc-600">Run in any project folder:</p>
           <pre className="text-xs bg-zinc-950 text-zinc-100 p-4 rounded-lg overflow-x-auto">
-            {`bunx @butttons/draftboard              # auto-pick a free port starting at 4321
-bunx @butttons/draftboard --port 5005  # pin a port
-bunx @butttons/draftboard --dir .mydir # custom directory
-DRAFTBOARD_DIR=.mydir bunx @butttons/draftboard # or via env var
-bunx @butttons/draftboard --open       # open the browser on start`}
+            {`npx @butttons/draftboard              # auto-pick a free port starting at 4321
+npx @butttons/draftboard --port 5005  # pin a port
+npx @butttons/draftboard --dir .mydir # custom directory
+DRAFTBOARD_DIR=.mydir npx @butttons/draftboard # or via env var
+npx @butttons/draftboard --open       # open the browser on start`}
           </pre>
         </Section>
 
