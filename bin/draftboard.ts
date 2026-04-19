@@ -147,7 +147,7 @@ const program = new Command();
 program
 	.name("draftboard")
 	.description("Local wireframing tool with MCP server for AI agents")
-	.version("0.0.6")
+	.version("0.0.7")
 	.option("-p, --port <number>", "port number (default: 4321)")
 	.option("-d, --dir <path>", "design directory (default: .draftboard)")
 	.option("--open", "open browser on start")
