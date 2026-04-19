@@ -13,6 +13,11 @@ import {
   FileText,
   FilePlus,
   Layout,
+  Search,
+  CheckCircle,
+  Link as LinkIcon,
+  MoveRight,
+  Tag,
 } from "lucide-react";
 import { fetchMcpActivities } from "#/server/functions";
 import type { McpActivity, McpAction } from "#/server/mcp/activity";
@@ -39,6 +44,13 @@ const actionIcons: Record<McpAction, typeof Zap> = {
   update_layout: Layout,
   upsert_component: FilePlus,
   delete_component: Trash2,
+  list_markers_in_screen: Tag,
+  replace_component_in_screen: Pencil,
+  validate_screen: CheckCircle,
+  validate_all_screens: CheckCircle,
+  find_screens_using: Search,
+  find_screens_linking_to: LinkIcon,
+  rename_screen: MoveRight,
 };
 
 const actionLabels: Record<McpAction, string> = {
@@ -56,6 +68,13 @@ const actionLabels: Record<McpAction, string> = {
   update_layout: "Updated layout",
   upsert_component: "Upserted component",
   delete_component: "Deleted component",
+  list_markers_in_screen: "Listed markers",
+  replace_component_in_screen: "Replaced marker",
+  validate_screen: "Validated screen",
+  validate_all_screens: "Validated all screens",
+  find_screens_using: "Found usages",
+  find_screens_linking_to: "Found links",
+  rename_screen: "Renamed screen",
 };
 
 function formatTime(iso: string): string {
@@ -133,7 +152,7 @@ export default function McpStatusBadge() {
           </span>
         )}
       </DrawerTrigger>
-      <DrawerContent>
+      <DrawerContent overlayClassName="supports-backdrop-filter:backdrop-blur-none bg-transparent">
         <DrawerHeader className="border-b border-zinc-100">
           <DrawerTitle className="flex items-center gap-2 text-sm">
             <Zap size={14} className="text-zinc-500" />

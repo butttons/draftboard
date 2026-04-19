@@ -40,7 +40,7 @@ function parseMarkerAttrs(str: string): Record<string, string> {
 
 function parseComponents(content: string): Component[] {
 	const components: Component[] = [];
-	const regex = /<!-- (\w+):start(.*?) -->([\s\S]*?)<!-- \1:end -->/g;
+	const regex = /<!-- ([a-zA-Z][\w-]*):start(.*?) -->([\s\S]*?)<!-- \1:end -->/g;
 	let match;
 
 	while ((match = regex.exec(content)) !== null) {

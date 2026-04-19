@@ -19,6 +19,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SNameRouteImport } from './routes/s.$name'
 import { Route as PreviewNameRouteImport } from './routes/preview.$name'
 import { Route as PScreenRouteImport } from './routes/p.$screen'
+import { Route as CNameRouteImport } from './routes/c.$name'
 import { Route as ApiLayoutRouteImport } from './routes/api.layout'
 
 const SseRoute = SseRouteImport.update({
@@ -71,6 +72,11 @@ const PScreenRoute = PScreenRouteImport.update({
   path: '/p/$screen',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CNameRoute = CNameRouteImport.update({
+  id: '/c/$name',
+  path: '/c/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLayoutRoute = ApiLayoutRouteImport.update({
   id: '/api/layout',
   path: '/api/layout',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
+  '/c/$name': typeof CNameRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
+  '/c/$name': typeof CNameRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/sse': typeof SseRoute
   '/api/layout': typeof ApiLayoutRoute
+  '/c/$name': typeof CNameRoute
   '/p/$screen': typeof PScreenRoute
   '/preview/$name': typeof PreviewNameRoute
   '/s/$name': typeof SNameRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/sse'
     | '/api/layout'
+    | '/c/$name'
     | '/p/$screen'
     | '/preview/$name'
     | '/s/$name'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/sse'
     | '/api/layout'
+    | '/c/$name'
     | '/p/$screen'
     | '/preview/$name'
     | '/s/$name'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/sse'
     | '/api/layout'
+    | '/c/$name'
     | '/p/$screen'
     | '/preview/$name'
     | '/s/$name'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   SseRoute: typeof SseRoute
   ApiLayoutRoute: typeof ApiLayoutRoute
+  CNameRoute: typeof CNameRoute
   PScreenRoute: typeof PScreenRoute
   PreviewNameRoute: typeof PreviewNameRoute
   SNameRoute: typeof SNameRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PScreenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/c/$name': {
+      id: '/c/$name'
+      path: '/c/$name'
+      fullPath: '/c/$name'
+      preLoaderRoute: typeof CNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/layout': {
       id: '/api/layout'
       path: '/api/layout'
@@ -264,6 +284,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   SseRoute: SseRoute,
   ApiLayoutRoute: ApiLayoutRoute,
+  CNameRoute: CNameRoute,
   PScreenRoute: PScreenRoute,
   PreviewNameRoute: PreviewNameRoute,
   SNameRoute: SNameRoute,

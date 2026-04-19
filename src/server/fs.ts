@@ -216,6 +216,70 @@ export function renameScreen(
 	return Result.try(() => renameSync(oldPath, newPath));
 }
 
+export function renameScreenWithLinks({
+	from,
+	to,
+	updateLinks,
+	cwd = process.cwd(),
+}: {
+	from: string;
+	to: string;
+	updateLinks: boolean;
+	cwd?: string;
+}): Result<
+	{ renamed: boolean; links_updated: { screen_name: string; count: number }[] },
+	Error
+> {
+	if (!validateScreenName(from) || !validateScreenName(to)) {
+		return Result.err(
+			new Error("Invalid screen name. Use kebab-case, no path separators."),
+		);
+	}
+	const screensDir = getScreensDir(cwd);
+	const oldPath = join(screensDir, `${from}.html`);
+	const newPath = join(screensDir, `${to}.html`);
+	if (!existsSync(oldPath)) {
+		return Result.err(new Error(`Screen "${from}" does not exist.`));
+	}
+	if (existsSync(newPath)) {
+		return Result.err(new Error(`Screen "${to}" already exists.`));
+	}
+
+	const linksUpdated: { screen_name: string; count: number }[] = [];
+	const pending: { path: string; content: string }[] = [];
+
+	if (updateLinks) {
+		const escaped = from.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+		const hrefRe = new RegExp(`href="((?:/p/)?)${escaped}(/?)"`, "g");
+		const files = readdirSync(screensDir).filter(
+			(f) => f.endsWith(".html") && f !== `${from}.html`,
+		);
+		for (const file of files) {
+			const filePath = join(screensDir, file);
+			const content = readFileSync(filePath, "utf-8");
+			let count = 0;
+			const next = content.replace(hrefRe, (_m, prefix, trailing) => {
+				count++;
+				return `href="${prefix}${to}${trailing}"`;
+			});
+			if (count > 0) {
+				pending.push({ path: filePath, content: next });
+				linksUpdated.push({ screen_name: file.replace(/\.html$/, ""), count });
+			}
+		}
+	}
+
+	try {
+		renameSync(oldPath, newPath);
+		for (const p of pending) {
+			writeFileSync(p.path, p.content);
+		}
+	} catch (e) {
+		return Result.err(e instanceof Error ? e : new Error(String(e)));
+	}
+	return Result.ok({ renamed: true, links_updated: linksUpdated });
+}
+
 export function getConventions(cwd: string = process.cwd()): string {
 	const designDir = getDesignDir(cwd);
 	const designMdPath = join(designDir, "design.md");

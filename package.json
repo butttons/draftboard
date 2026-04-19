@@ -1,7 +1,7 @@
 {
   "name": "@butttons/draftboard",
   "type": "module",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "bin": {
     "draftboard": "./dist/draftboard.cjs"
   },
@@ -18,10 +18,10 @@
     "url": "https://github.com/butttons/draftboard"
   },
   "scripts": {
-    "dev": "portless draftboard.dev vite dev",
+    "dev": "vite dev --port 5005",
     "build": "vite build && pnpm run build:bin",
-    "preview": "portless draftboard.preview vite preview",
-    "start": "portless draftboard node .output/server/index.mjs",
+    "preview": "vite preview",
+    "start": "PORT=5005 node .output/server/index.mjs",
     "test": "vitest run",
     "build:bin": "esbuild bin/draftboard.ts --bundle --platform=node --format=cjs --outfile=dist/draftboard.cjs.tmp && printf '#!/usr/bin/env node\\n' | cat - dist/draftboard.cjs.tmp > dist/draftboard.cjs && rm dist/draftboard.cjs.tmp && chmod +x dist/draftboard.cjs",
     "format": "biome format",

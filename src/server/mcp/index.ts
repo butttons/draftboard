@@ -11,7 +11,17 @@ import {
 	getDesignMd,
 	writeDesignMd,
 	writeLayoutHtml,
+	renameScreenWithLinks,
+	getScreenFilePath,
 } from "../fs";
+import { parseMarkers, replaceMarkerOccurrence } from "../markers";
+import {
+	validateScreen,
+	validateAllScreens,
+	findScreensUsing,
+	findScreensLinkingTo,
+} from "../screen-validator";
+import { writeFileSync } from "node:fs";
 import { validateScreenName } from "../validation";
 import { recordActivity, type McpAction } from "./activity";
 import {
@@ -546,6 +556,218 @@ export function createMcpServer(): McpServer {
 							text: `Component "${variant ? `${name}:${variant}` : name}" deleted.`,
 						},
 					],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"list_markers_in_screen",
+		{
+			title: "List Markers In Screen",
+			description:
+				"Returns every component marker in the screen in source order, with parsed props and line ranges.",
+			inputSchema: {
+				name: z.string().describe("Screen name (kebab-case)"),
+			},
+		},
+		tracked("list_markers_in_screen", ({ name }) => {
+			const screen = getScreen(name);
+			if (!screen) {
+				return {
+					content: [{ type: "text" as const, text: `Screen "${name}" not found.` }],
+					isError: true,
+				};
+			}
+			return parseMarkers(screen.html).match({
+				ok: (markers) => ({
+					content: [
+						{
+							type: "text" as const,
+							text: JSON.stringify(
+								markers.map((m) => ({
+									name: m.name,
+									props: m.props,
+									start_line: m.startLine,
+									end_line: m.endLine,
+								})),
+								null,
+								2,
+							),
+						},
+					],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"replace_component_in_screen",
+		{
+			title: "Replace Component In Screen",
+			description:
+				"Surgically replaces the inner HTML of a marker block inside a screen without rewriting the whole file. Preserves the start/end tags. Use list_markers_in_screen first to discover targets.",
+			inputSchema: {
+				screen_name: z.string().describe("Screen name (kebab-case)"),
+				marker_name: z.string().describe("Marker name (e.g. button, card)"),
+				occurrence: z
+					.union([z.number().int(), z.literal("all")])
+					.optional()
+					.describe(
+						"0-indexed occurrence; negative indexes from the end; 'all' replaces every occurrence. Default: 0.",
+					),
+				html: z.string().describe("New inner HTML to place between the markers."),
+			},
+		},
+		tracked("replace_component_in_screen", ({ screen_name, marker_name, occurrence, html }) => {
+			const screen = getScreen(screen_name);
+			if (!screen) {
+				return {
+					content: [
+						{ type: "text" as const, text: `Screen "${screen_name}" not found.` },
+					],
+					isError: true,
+				};
+			}
+			const occ = occurrence ?? 0;
+			return replaceMarkerOccurrence({
+				content: screen.html,
+				name: marker_name,
+				occurrence: occ,
+				html,
+			}).match({
+				ok: ({ content, replaced }) => {
+					try {
+						writeFileSync(getScreenFilePath(screen_name), content);
+					} catch (e) {
+						return {
+							content: [
+								{
+									type: "text" as const,
+									text: e instanceof Error ? e.message : String(e),
+								},
+							],
+							isError: true,
+						};
+					}
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: `Replaced ${replaced} "${marker_name}" marker(s) in "${screen_name}".`,
+							},
+						],
+					};
+				},
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"validate_screen",
+		{
+			title: "Validate Screen",
+			description:
+				"Lints a screen against current conventions: off-palette colors, bare component tags missing markers, unknown marker names, malformed markers, and dead links to non-existent screens.",
+			inputSchema: {
+				name: z.string().describe("Screen name (kebab-case)"),
+			},
+		},
+		tracked("validate_screen", ({ name }) => {
+			const { issues } = validateScreen({ screenName: name });
+			return {
+				content: [{ type: "text", text: JSON.stringify({ issues }, null, 2) }],
+			};
+		}),
+	);
+
+	server.registerTool(
+		"validate_all_screens",
+		{
+			title: "Validate All Screens",
+			description:
+				"Runs validate_screen across every screen. Useful after updating design.md or components.html to find stale screens.",
+			inputSchema: {},
+		},
+		tracked("validate_all_screens", () => {
+			const result = validateAllScreens();
+			return {
+				content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+			};
+		}),
+	);
+
+	server.registerTool(
+		"find_screens_using",
+		{
+			title: "Find Screens Using",
+			description:
+				"Returns every screen that contains at least one marker with the given name. Use before editing or deleting a component to understand blast radius.",
+			inputSchema: {
+				marker_name: z.string().describe("Marker/component name to search for"),
+			},
+		},
+		tracked("find_screens_using", ({ marker_name }) => {
+			const hits = findScreensUsing({ markerName: marker_name });
+			return {
+				content: [{ type: "text", text: JSON.stringify(hits, null, 2) }],
+			};
+		}),
+	);
+
+	server.registerTool(
+		"find_screens_linking_to",
+		{
+			title: "Find Screens Linking To",
+			description:
+				"Returns every screen containing an <a href> that points to the given screen (either bare name or /p/name). Use before renaming or deleting.",
+			inputSchema: {
+				screen_name: z.string().describe("Target screen name"),
+			},
+		},
+		tracked("find_screens_linking_to", ({ screen_name }) => {
+			const hits = findScreensLinkingTo({ screenName: screen_name });
+			return {
+				content: [{ type: "text", text: JSON.stringify(hits, null, 2) }],
+			};
+		}),
+	);
+
+	server.registerTool(
+		"rename_screen",
+		{
+			title: "Rename Screen",
+			description:
+				"Renames a screen file. When update_links is true (default), also rewrites <a href> references in other screens so cross-screen links stay intact.",
+			inputSchema: {
+				from: z.string().describe("Current screen name"),
+				to: z.string().describe("New screen name"),
+				update_links: z
+					.boolean()
+					.optional()
+					.describe("Rewrite links in other screens. Default: true."),
+			},
+		},
+		tracked("rename_screen", ({ from, to, update_links }) => {
+			return renameScreenWithLinks({
+				from,
+				to,
+				updateLinks: update_links ?? true,
+			}).match({
+				ok: (result) => ({
+					content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
 				}),
 				err: (e) => ({
 					content: [{ type: "text" as const, text: e.message }],

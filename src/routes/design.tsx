@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronRight, Save } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { designMdQueryOptions } from "#/server/queries";
 import { saveDesignMd } from "#/server/functions";
@@ -37,8 +37,14 @@ function DesignEditor() {
   const queryClient = useQueryClient();
   const { data: content = "" } = useQuery(designMdQueryOptions());
   const [localContent, setLocalContent] = useState(content);
+  const [savedContent, setSavedContent] = useState(content);
 
-  const hasUnsavedChanges = localContent !== content;
+  const hasUnsavedChanges = localContent !== savedContent;
+
+  useEffect(() => {
+    setLocalContent(content);
+    setSavedContent(content);
+  }, [content]);
 
   const saveMutation = useMutation({
     mutationFn: (newContent: string) => saveDesignMd({ data: { content: newContent } }),

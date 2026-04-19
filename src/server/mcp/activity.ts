@@ -12,7 +12,14 @@ export type McpAction =
 	| "update_design_doc"
 	| "update_layout"
 	| "upsert_component"
-	| "delete_component";
+	| "delete_component"
+	| "list_markers_in_screen"
+	| "replace_component_in_screen"
+	| "validate_screen"
+	| "validate_all_screens"
+	| "find_screens_using"
+	| "find_screens_linking_to"
+	| "rename_screen";
 
 export type McpActivity = {
 	id: string;

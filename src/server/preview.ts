@@ -1,4 +1,5 @@
 import { getScreen, getLayoutHtml } from "./fs";
+import { getComponent, renderComponent } from "./components";
 
 const LIGHTWEIGHT_LAYOUT = `<!doctype html>
 <html>
@@ -64,6 +65,45 @@ export function generateLivePreviewHtml(screenName: string): string {
 
   const content = screen.html.trim();
   return LIVE_LAYOUT.replace("{{content}}", content);
+}
+
+const COMPONENT_LAYOUT = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/lib/tailwind.js"></script>
+  <script src="/lib/lucide.js"></script>
+  <style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0;background:transparent;font-family:system-ui,-apple-system,sans-serif}body{padding:24px;display:flex;align-items:flex-start;justify-content:flex-start}</style>
+</head>
+<body>
+  {{content}}
+  <script>
+    if (window.lucide) lucide.createIcons();
+    var es = new EventSource('/sse');
+    es.onmessage = function(ev) {
+      try {
+        var d = JSON.parse(ev.data);
+        if (d.type === 'components_changed') window.location.reload();
+      } catch(e) {}
+    };
+  </script>
+</body>
+</html>`;
+
+export function generateComponentPreviewHtml({
+	name,
+	variant,
+}: {
+	name: string;
+	variant?: string;
+}): string {
+	const component = getComponent(name, variant);
+	if (!component) {
+		return errorHtml(variant ? `${name}:${variant}` : name);
+	}
+	const content = renderComponent(component);
+	return COMPONENT_LAYOUT.replace("{{content}}", content);
 }
 
 function errorHtml(name: string): string {
