@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { McpActivity } from "#/server/mcp-activity";
+import type { McpActivity } from "#/server/mcp/activity";
 
 export function useSSE() {
   const queryClient = useQueryClient();

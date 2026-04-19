@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { listScreens, getScreen, createScreen, updateScreen, deleteScreen, renameScreen, getDesignMd, getComponentsHtml, getLayoutHtml, writeDesignMd, writeComponentsHtml, writeLayoutHtml } from "./fs";
 import { validateScreenName } from "./validation";
-import { getRecentActivities, type McpActivity } from "./mcp-activity";
+import { getRecentActivities, type McpActivity } from "./mcp/activity";
 
 export type Screen = {
   name: string;

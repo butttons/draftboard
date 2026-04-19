@@ -12,7 +12,7 @@ import {
   Component,
 } from "lucide-react";
 import { fetchMcpActivities } from "#/server/functions";
-import type { McpActivity, McpAction } from "#/server/mcp-activity";
+import type { McpActivity, McpAction } from "#/server/mcp/activity";
 import {
   Popover,
   PopoverContent,

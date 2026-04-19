@@ -1,5 +1,5 @@
 import { addListener } from "./watcher";
-import { addActivityListener } from "./mcp-activity";
+import { addActivityListener } from "./mcp/activity";
 
 const encoder = new TextEncoder();
 

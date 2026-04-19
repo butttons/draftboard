@@ -12,8 +12,28 @@ export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(screensQueryOptions());
   },
+  pendingComponent: CanvasPending,
   component: Canvas,
 });
+
+function CanvasPending() {
+  return (
+    <div className="p-6">
+      <h1 className="text-xl font-semibold text-zinc-950 mb-6">Canvas</h1>
+      <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="border border-zinc-200 rounded-lg overflow-hidden">
+            <div className="aspect-[4/3] bg-zinc-100 animate-pulse" />
+            <div className="p-3 space-y-2">
+              <div className="h-4 bg-zinc-100 rounded animate-pulse w-2/3" />
+              <div className="h-3 bg-zinc-100 rounded animate-pulse w-1/2" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Canvas() {
   const { data: screens = [] } = useQuery(screensQueryOptions());

@@ -13,8 +13,31 @@ export const Route = createFileRoute("/s/$name")({
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(screenQueryOptions(params.name));
   },
+  pendingComponent: ScreenEditorPending,
   component: ScreenEditor,
 });
+
+function ScreenEditorPending() {
+  const { name } = Route.useParams();
+  return (
+    <div className="h-screen flex flex-col">
+      <div className="h-10 bg-white border-b border-zinc-200 flex items-center gap-2 px-3 flex-shrink-0">
+        <div className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-zinc-300">
+          <ChevronLeft size={18} />
+        </div>
+        <div className="w-px h-5 bg-zinc-200" />
+        <span className="text-sm font-medium text-zinc-400">{name}</span>
+        <div className="flex-1" />
+      </div>
+      <div className="flex-1 flex items-center justify-center bg-zinc-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-zinc-200 border-t-zinc-500 animate-spin" />
+          <p className="text-sm text-zinc-400">Loading screen...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ScreenEditor() {
   const { name } = Route.useParams();
