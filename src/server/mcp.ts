@@ -337,6 +337,13 @@ Every component in your screen MUST be wrapped with markers:
 
 This allows the AI to find and update specific components later using update_screen with start/end lines.
 
+## LINKING BETWEEN SCREENS
+
+Use relative paths to link between screens:
+\`<a href="other-screen-name">Go to other screen</a>\`
+
+From \`/p/profile\`, this links to \`/p/other-screen-name\`. Use list_screens to see existing screens.
+
 ## AVAILABLE COMPONENTS
 
 ${componentList}
