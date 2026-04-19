@@ -8,10 +8,18 @@ import {
 	deleteScreen,
 	getConventions,
 	scaffoldDesignDir,
+	getDesignMd,
+	writeDesignMd,
+	writeLayoutHtml,
 } from "../fs";
 import { validateScreenName } from "../validation";
 import { recordActivity, type McpAction } from "./activity";
-import { listComponents, getComponent } from "../components";
+import {
+	listComponents,
+	getComponent,
+	upsertComponent,
+	deleteComponent,
+} from "../components";
 import { buildConventionsResponse } from "./templates";
 
 type ToolArgs = Record<string, unknown>;
@@ -396,6 +404,154 @@ export function createMcpServer(): McpServer {
 			return {
 				content: [{ type: "text", text: result }],
 			};
+		}),
+	);
+
+	server.registerTool(
+		"get_design_doc",
+		{
+			title: "Get Design Doc",
+			description:
+				"Returns the raw contents of design.md for editing. Use get_conventions when you want the formatted read-only bundle instead.",
+			inputSchema: {},
+		},
+		tracked("get_design_doc", () => {
+			const content = getDesignMd();
+			return { content: [{ type: "text", text: content }] };
+		}),
+	);
+
+	server.registerTool(
+		"update_design_doc",
+		{
+			title: "Update Design Doc",
+			description:
+				"Full-file replace of design.md. This affects every future screen generation — be deliberate.",
+			inputSchema: {
+				content: z
+					.string()
+					.describe("The full new markdown contents of design.md"),
+			},
+		},
+		tracked("update_design_doc", ({ content }) => {
+			if (typeof content !== "string" || content.trim().length === 0) {
+				return {
+					content: [
+						{ type: "text" as const, text: "design.md content must be non-empty." },
+					],
+					isError: true,
+				};
+			}
+			return writeDesignMd(content).match({
+				ok: () => ({
+					content: [{ type: "text" as const, text: "design.md updated." }],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"update_layout",
+		{
+			title: "Update Layout",
+			description:
+				"Full-file replace of layout.html, the wrapper template used around every screen preview.",
+			inputSchema: {
+				content: z
+					.string()
+					.describe("The full new HTML contents of layout.html"),
+			},
+		},
+		tracked("update_layout", ({ content }) => {
+			if (typeof content !== "string" || content.trim().length === 0) {
+				return {
+					content: [
+						{ type: "text" as const, text: "layout.html content must be non-empty." },
+					],
+					isError: true,
+				};
+			}
+			return writeLayoutHtml(content).match({
+				ok: () => ({
+					content: [{ type: "text" as const, text: "layout.html updated." }],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"upsert_component",
+		{
+			title: "Upsert Component",
+			description:
+				"Create or replace a single component block in components.html. Keyed by name (and optional variant). Pass the inner HTML only — the start/end markers are generated for you.",
+			inputSchema: {
+				name: z
+					.string()
+					.describe("Component name (identifier, e.g. button, card, lifecycle-bar)"),
+				html: z
+					.string()
+					.describe(
+						"Inner HTML for the component. May use {{prop}} placeholders and <!-- slot:name --> markers.",
+					),
+				variant: z
+					.string()
+					.optional()
+					.describe("Optional variant key (e.g. primary, secondary)"),
+			},
+		},
+		tracked("upsert_component", ({ name, html, variant }) => {
+			return upsertComponent({ name, html, variant }).match({
+				ok: ({ created }) => ({
+					content: [
+						{
+							type: "text" as const,
+							text: `Component "${variant ? `${name}:${variant}` : name}" ${created ? "created" : "replaced"}.`,
+						},
+					],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
+		}),
+	);
+
+	server.registerTool(
+		"delete_component",
+		{
+			title: "Delete Component",
+			description:
+				"Remove a component block from components.html. If multiple variants share a name, pass variant to target a specific one.",
+			inputSchema: {
+				name: z.string().describe("Component name"),
+				variant: z.string().optional().describe("Variant to delete, if any"),
+			},
+		},
+		tracked("delete_component", ({ name, variant }) => {
+			return deleteComponent({ name, variant }).match({
+				ok: () => ({
+					content: [
+						{
+							type: "text" as const,
+							text: `Component "${variant ? `${name}:${variant}` : name}" deleted.`,
+						},
+					],
+				}),
+				err: (e) => ({
+					content: [{ type: "text" as const, text: e.message }],
+					isError: true,
+				}),
+			});
 		}),
 	);
 

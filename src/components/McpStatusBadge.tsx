@@ -10,6 +10,9 @@ import {
   Play,
   LayoutGrid,
   Component,
+  FileText,
+  FilePlus,
+  Layout,
 } from "lucide-react";
 import { fetchMcpActivities } from "#/server/functions";
 import type { McpActivity, McpAction } from "#/server/mcp/activity";
@@ -31,6 +34,11 @@ const actionIcons: Record<McpAction, typeof Zap> = {
   get_conventions: BookOpen,
   list_components: LayoutGrid,
   get_component: Component,
+  get_design_doc: FileText,
+  update_design_doc: FileText,
+  update_layout: Layout,
+  upsert_component: FilePlus,
+  delete_component: Trash2,
 };
 
 const actionLabels: Record<McpAction, string> = {
@@ -43,6 +51,11 @@ const actionLabels: Record<McpAction, string> = {
   get_conventions: "Read conventions",
   list_components: "Listed components",
   get_component: "Read component",
+  get_design_doc: "Read design doc",
+  update_design_doc: "Updated design doc",
+  update_layout: "Updated layout",
+  upsert_component: "Upserted component",
+  delete_component: "Deleted component",
 };
 
 function formatTime(iso: string): string {

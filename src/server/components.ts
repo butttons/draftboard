@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { Result } from "better-result";
 import { getDesignDir } from "./config";
 
 export type Component = {
@@ -85,6 +86,101 @@ export function getComponent(
 export function getComponentNames(cwd: string = process.cwd()): string[] {
 	const components = listComponents(cwd);
 	return [...new Set(components.map((c) => c.name))];
+}
+
+function buildComponentBlock({
+	name,
+	variant,
+	html,
+}: {
+	name: string;
+	variant?: string;
+	html: string;
+}): string {
+	const attrs = variant ? ` variant="${variant}"` : "";
+	return `<!-- ${name}:start${attrs} -->\n${html.trim()}\n<!-- ${name}:end -->`;
+}
+
+function findBlockRange({
+	content,
+	name,
+	variant,
+}: {
+	content: string;
+	name: string;
+	variant?: string;
+}): { start: number; end: number } | null {
+	const regex = new RegExp(
+		`<!-- ${name}:start(.*?) -->[\\s\\S]*?<!-- ${name}:end -->`,
+		"g",
+	);
+	let match: RegExpExecArray | null;
+	while ((match = regex.exec(content)) !== null) {
+		const attrs = parseMarkerAttrs(match[1].trim());
+		if ((variant ?? undefined) === (attrs.variant ?? undefined)) {
+			return { start: match.index, end: match.index + match[0].length };
+		}
+	}
+	return null;
+}
+
+export function upsertComponent({
+	name,
+	html,
+	variant,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	html: string;
+	variant?: string;
+	cwd?: string;
+}): Result<{ created: boolean }, Error> {
+	if (!/^[a-z][a-z0-9-]*$/i.test(name)) {
+		return Result.err(new Error("Invalid component name. Use a word identifier."));
+	}
+	if (html.trim().length === 0) {
+		return Result.err(new Error("Component html must be non-empty."));
+	}
+	const path = getComponentsPath(cwd);
+	const existing = existsSync(path) ? readFileSync(path, "utf-8") : "";
+	const block = buildComponentBlock({ name, variant, html });
+	const range = findBlockRange({ content: existing, name, variant });
+
+	let next: string;
+	let created: boolean;
+	if (range) {
+		next = existing.slice(0, range.start) + block + existing.slice(range.end);
+		created = false;
+	} else {
+		const sep = existing.length > 0 && !existing.endsWith("\n\n") ? "\n\n" : "";
+		next = existing + sep + block + "\n";
+		created = true;
+	}
+	return Result.try(() => writeFileSync(path, next)).map(() => ({ created }));
+}
+
+export function deleteComponent({
+	name,
+	variant,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	variant?: string;
+	cwd?: string;
+}): Result<void, Error> {
+	const path = getComponentsPath(cwd);
+	if (!existsSync(path)) {
+		return Result.err(new Error("components.html does not exist."));
+	}
+	const existing = readFileSync(path, "utf-8");
+	const range = findBlockRange({ content: existing, name, variant });
+	if (!range) {
+		const label = variant ? `${name}:${variant}` : name;
+		return Result.err(new Error(`Component "${label}" not found.`));
+	}
+	let next = existing.slice(0, range.start) + existing.slice(range.end);
+	next = next.replace(/\n{3,}/g, "\n\n");
+	return Result.try(() => writeFileSync(path, next));
 }
 
 export function renderComponent(

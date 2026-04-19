@@ -7,7 +7,12 @@ export type McpAction =
 	| "delete_screen"
 	| "get_conventions"
 	| "list_components"
-	| "get_component";
+	| "get_component"
+	| "get_design_doc"
+	| "update_design_doc"
+	| "update_layout"
+	| "upsert_component"
+	| "delete_component";
 
 export type McpActivity = {
 	id: string;
