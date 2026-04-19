@@ -140,10 +140,10 @@ export function createMcpServer(): McpServer {
     {
       title: "Create Screen",
       description:
-        "Create a new wireframe screen with the given name and HTML content. Errors if the screen already exists.",
+        "Create a new wireframe screen. IMPORTANT: Call get_conventions first to get the design rules and reusable component blocks. Compose the HTML using those components, not raw HTML.",
       inputSchema: {
         name: z.string().describe("The screen name (kebab-case)"),
-        html: z.string().describe("The HTML content for the screen"),
+        html: z.string().describe("The HTML content, composed from components in get_conventions"),
       },
     },
     tracked("create_screen", ({ name, html }) => {
@@ -177,10 +177,10 @@ export function createMcpServer(): McpServer {
     {
       title: "Update Screen",
       description:
-        "Update a screen's HTML. If start and end are provided, only those lines are replaced. Otherwise, the entire file is overwritten.",
+        "Update a screen's HTML. Call get_conventions first to get components and design rules. If start and end are provided, only those lines are replaced. Otherwise, the entire file is overwritten.",
       inputSchema: {
         name: z.string().describe("The screen name (kebab-case)"),
-        html: z.string().describe("The HTML content"),
+        html: z.string().describe("The HTML content, composed from components in get_conventions"),
         start: z
           .number()
           .int()
@@ -296,12 +296,24 @@ export function createMcpServer(): McpServer {
     {
       title: "Get Conventions",
       description:
-        "Get the design conventions (design.md) and canonical components (components.html) concatenated. Call this before generating screens to understand the project's design system.",
+        "REQUIRED before creating or updating screens. Returns design rules and reusable component blocks. Always call this first, then compose screens using the components listed.",
       inputSchema: {},
     },
     tracked("get_conventions", () => {
+      const conventions = getConventions();
+      const response = `## HOW TO USE
+
+1. Read the DESIGN CONVENTIONS below and follow them strictly.
+2. Read the COMPONENTS section - these are pre-built HTML blocks.
+3. Compose your screen by COPY-PASTING and combining these components.
+4. Do NOT write raw HTML when a component exists for that pattern.
+5. Wrap components in layout containers using the spacing/layout rules.
+
+---
+
+${conventions}`;
       return {
-        content: [{ type: "text", text: getConventions() }],
+        content: [{ type: "text", text: response }],
       };
     }),
   );

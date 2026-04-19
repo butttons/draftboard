@@ -42,7 +42,7 @@ function NavLink({
         "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition",
         active
           ? "bg-zinc-950 text-white"
-          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
       )}
     >
       <Icon size={16} />
@@ -70,7 +70,7 @@ export default function Sidebar() {
           to="/"
           className="text-sm font-semibold text-zinc-950 no-underline tracking-tight"
         >
-          @butttons/draftboard
+          draftboard
         </Link>
       </div>
 
@@ -100,7 +100,7 @@ export default function Sidebar() {
                   "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition",
                   pathname === `/s/${screen.name}`
                     ? "bg-zinc-950 text-white"
-                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900",
                 )}
               >
                 <FileCode2 size={16} />
