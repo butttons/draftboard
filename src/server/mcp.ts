@@ -302,30 +302,46 @@ export function createMcpServer(): McpServer {
     },
     tracked("get_conventions", () => {
       const conventions = getConventions();
+      const components = listComponents();
+      const componentList = components.map((c) => {
+        const variant = c.variant ? `:${c.variant}` : "";
+        const props = Object.keys(c.props).filter((k) => k !== "variant").join(", ");
+        const slots = c.slots.join(", ");
+        let desc = `- **${c.name}**${variant}`;
+        if (props) desc += ` (props: ${props})`;
+        if (slots) desc += ` (slots: ${slots})`;
+        return desc;
+      }).join("\n");
       const response = `## HOW TO BUILD SCREENS
 
-1. ALWAYS use the custom elements below (db-button, db-card, etc.) instead of raw HTML.
-2. These are web components defined in the layout - they work out of the box.
-3. Combine them to build your screen. Do NOT write raw divs/buttons when a component exists.
-4. Follow the DESIGN CONVENTIONS for spacing, colors, and typography.
-5. Your screen should ONLY contain component markup and Tailwind layout classes.
+1. Use the components from the COMPONENTS section below.
+2. WRAP each component with markers for easy identification:
+   \`<!-- name:start props --> ... <!-- name:end -->\`
+3. Follow the DESIGN CONVENTIONS for spacing, colors, and typography.
+
+## MARKER FORMAT (REQUIRED)
+
+Every component in your screen MUST be wrapped with markers:
+
+\`\`\`html
+<!-- button:start label="Save" variant=primary -->
+<button class="bg-zinc-950 text-white px-4 py-2 text-sm font-medium rounded">Save</button>
+<!-- button:end -->
+
+<!-- card:start -->
+<div class="border border-zinc-200 rounded bg-white overflow-hidden">
+  ...
+</div>
+<!-- card:end -->
+\`\`\`
+
+This allows the AI to find and update specific components later using update_screen with start/end lines.
 
 ## AVAILABLE COMPONENTS
 
-| Component | Usage | Attributes |
-|-----------|-------|------------|
-| <db-button> | Actions | variant="primary\|secondary" |
-| <db-input> | Text input | placeholder, type |
-| <db-card> | Container | (use with db-card-header/body/footer) |
-| <db-card-header> | Card header | - |
-| <db-card-body> | Card body | - |
-| <db-card-footer> | Card footer | - |
-| <db-empty> | Empty state | title, description |
-| <db-row> | List item | (use slots: avatar, primary, secondary, meta) |
-| <db-badge> | Label | variant="default\|success\|warning\|error" |
-| <db-avatar> | Avatar | size="sm\|md\|lg", slot content = initials |
-| <db-field> | Form field | label, placeholder, helper |
-| <db-nav> | Navigation | slots: brand, links |
+${componentList}
+
+Use list_components and get_component(name) for full HTML snippets.
 
 ---
 
