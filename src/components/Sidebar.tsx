@@ -11,8 +11,45 @@ import {
 } from "lucide-react";
 import { screensQueryOptions } from "#/server/queries";
 import { deleteScreenFn } from "#/server/functions";
+import { Button } from "#/components/ui/button";
+import { cn } from "#/lib/utils";
 import McpStatusBadge from "./McpStatusBadge";
 import McpSetupButton from "./McpSetupButton";
+
+const navItems = [
+  { to: "/", icon: LayoutGrid, label: "Canvas" },
+  { to: "/design", icon: Palette, label: "Design" },
+  { to: "/components", icon: Component, label: "Components" },
+  { to: "/layout", icon: Layers, label: "Layout" },
+  { to: "/help", icon: HelpCircle, label: "Help" },
+] as const;
+
+function NavLink({
+  to,
+  icon: Icon,
+  label,
+  active,
+}: {
+  to: string;
+  icon: typeof LayoutGrid;
+  label: string;
+  active: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      className={cn(
+        "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition",
+        active
+          ? "bg-zinc-950 text-white"
+          : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+      )}
+    >
+      <Icon size={16} />
+      {label}
+    </Link>
+  );
+}
 
 export default function Sidebar() {
   const { data: screens = [] } = useQuery(screensQueryOptions());
@@ -37,93 +74,52 @@ export default function Sidebar() {
         </Link>
       </div>
 
-      <nav className="p-2 border-b border-zinc-200 space-y-1">
-        <Link
-          to="/"
-          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/"
-              ? "bg-zinc-950 text-white"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          <LayoutGrid size={16} />
-          Canvas
-        </Link>
-        <Link
-          to="/design"
-          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/design"
-              ? "bg-zinc-950 text-white"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          <Palette size={16} />
-          Design
-        </Link>
-        <Link
-          to="/components"
-          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/components"
-              ? "bg-zinc-950 text-white"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          <Component size={16} />
-          Components
-        </Link>
-        <Link
-          to="/layout"
-          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/layout"
-              ? "bg-zinc-950 text-white"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          <Layers size={16} />
-          Layout
-        </Link>
-        <Link
-          to="/help"
-          className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-            pathname === "/help"
-              ? "bg-zinc-950 text-white"
-              : "text-zinc-600 hover:bg-zinc-100"
-          }`}
-        >
-          <HelpCircle size={16} />
-          Help
-        </Link>
+      <nav className="p-2 border-b border-zinc-200 space-y-0.5">
+        {navItems.map(({ to, icon, label }) => (
+          <NavLink
+            key={to}
+            to={to}
+            icon={icon}
+            label={label}
+            active={pathname === to}
+          />
+        ))}
       </nav>
 
       <div className="flex-1 overflow-y-auto p-2">
-        <p className="px-3 py-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
+        <p className="px-2.5 py-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
           Screens
         </p>
-        {screens.map((screen) => (
-          <div key={screen.name} className="group relative">
-            <Link
-              to="/s/$name"
-              params={{ name: screen.name }}
-              className={`flex items-center gap-2 px-3 py-2 text-sm transition ${
-                pathname === `/s/${screen.name}`
-                  ? "bg-zinc-950 text-white"
-                  : "text-zinc-600 hover:bg-zinc-100"
-              }`}
-            >
-              <FileCode2 size={16} />
-              <span className="truncate">{screen.name}</span>
-            </Link>
-            <button
-              onClick={() => deleteMutation.mutate(screen.name)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-200 text-zinc-400 hover:text-red-500 transition"
-              aria-label={`Delete ${screen.name}`}
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ))}
+        <div className="space-y-0.5">
+          {screens.map((screen) => (
+            <div key={screen.name} className="group relative">
+              <Link
+                to="/s/$name"
+                params={{ name: screen.name }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition",
+                  pathname === `/s/${screen.name}`
+                    ? "bg-zinc-950 text-white"
+                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                )}
+              >
+                <FileCode2 size={16} />
+                <span className="truncate">{screen.name}</span>
+              </Link>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:bg-red-50"
+                onClick={() => deleteMutation.mutate(screen.name)}
+                aria-label={`Delete ${screen.name}`}
+              >
+                <Trash2 size={14} />
+              </Button>
+            </div>
+          ))}
+        </div>
         {screens.length === 0 && (
-          <p className="px-3 py-2 text-sm text-zinc-400">No screens yet</p>
+          <p className="px-2.5 py-2 text-sm text-zinc-400">No screens yet</p>
         )}
       </div>
 

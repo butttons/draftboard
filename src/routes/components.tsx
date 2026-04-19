@@ -5,6 +5,7 @@ import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import { componentsHtmlQueryOptions } from "#/server/queries";
 import { saveComponentsHtml } from "#/server/functions";
+import { Button } from "#/components/ui/button";
 
 export const Route = createFileRoute("/components")({
   loader: async ({ context }) => {
@@ -31,7 +32,7 @@ function ComponentsEditor() {
     <div className="h-screen flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 bg-white">
         <div className="flex items-center gap-2 text-sm">
-          <Link to="/" className="text-zinc-400 hover:text-zinc-600 no-underline">
+          <Link to="/" className="text-zinc-400 hover:text-zinc-600 text-sm">
             Canvas
           </Link>
           <ChevronRight size={14} className="text-zinc-300" />
@@ -41,14 +42,15 @@ function ComponentsEditor() {
           {hasUnsavedChanges && (
             <span className="text-xs text-zinc-400">Unsaved changes</span>
           )}
-          <button
+          <Button
+            size="sm"
+            className="gap-1"
             onClick={() => saveMutation.mutate(localContent)}
             disabled={!hasUnsavedChanges || saveMutation.isPending}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             <Save size={14} />
             {saveMutation.isPending ? "Saving..." : "Save"}
-          </button>
+          </Button>
         </div>
       </div>
       <div className="flex-1 overflow-hidden">
