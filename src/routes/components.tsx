@@ -50,8 +50,36 @@ export const Route = createFileRoute("/components")({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(componentsHtmlQueryOptions());
   },
+  pendingComponent: ComponentsPending,
   component: ComponentsPreview,
 });
+
+function ComponentsPending() {
+  return (
+    <div className="min-h-screen">
+      <div className="flex items-center px-4 py-2 border-b border-zinc-200 bg-white text-sm">
+        <span className="text-zinc-400">Canvas</span>
+        <ChevronRight size={14} className="text-zinc-300 mx-2" />
+        <span className="text-zinc-400">Components</span>
+      </div>
+      <div className="max-w-4xl mx-auto px-8 py-10 space-y-10">
+        <header className="space-y-2">
+          <div className="h-7 w-56 bg-zinc-100 rounded animate-pulse" />
+          <div className="h-4 w-80 bg-zinc-100 rounded animate-pulse" />
+        </header>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <section key={i} className="space-y-3">
+            <div className="h-4 w-32 bg-zinc-100 rounded animate-pulse" />
+            <div className="border border-zinc-200 rounded bg-white overflow-hidden">
+              <div className="h-48 bg-zinc-50 animate-pulse" />
+              <div className="h-16 bg-zinc-100 animate-pulse" />
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function ComponentBlock({ block }: { block: ParsedBlock }) {
   const title = block.variant ? `${block.name} · ${block.variant}` : block.name;

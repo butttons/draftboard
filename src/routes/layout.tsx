@@ -11,8 +11,27 @@ export const Route = createFileRoute("/layout")({
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(layoutHtmlQueryOptions());
   },
+  pendingComponent: LayoutEditorPending,
   component: LayoutEditor,
 });
+
+function LayoutEditorPending() {
+  return (
+    <div className="min-h-screen">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-200 bg-white text-sm">
+        <span className="text-zinc-400">Canvas</span>
+        <ChevronRight size={14} className="text-zinc-300" />
+        <span className="text-zinc-400">Layout</span>
+      </div>
+      <div className="flex items-center justify-center h-[calc(100vh-41px)] bg-zinc-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-zinc-200 border-t-zinc-500 animate-spin" />
+          <p className="text-sm text-zinc-400">Loading layout template...</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function LayoutEditor() {
   const queryClient = useQueryClient();

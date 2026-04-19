@@ -1,13 +1,28 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, Trash2, Save, Code2, ExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  Trash2,
+  Save,
+  Code2,
+  ExternalLink,
+  Monitor,
+  Smartphone,
+} from "lucide-react";
+import { cn } from "#/lib/utils";
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { screenQueryOptions } from "#/server/queries";
-import { updateScreenFn, deleteScreenFn, renameScreenFn } from "#/server/functions";
+import {
+  updateScreenFn,
+  deleteScreenFn,
+  renameScreenFn,
+} from "#/server/functions";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 
-const Editor = lazy(() => import("@monaco-editor/react").then(m => ({ default: m.default })));
+const Editor = lazy(() =>
+  import("@monaco-editor/react").then((m) => ({ default: m.default })),
+);
 
 export const Route = createFileRoute("/s/$name")({
   loader: async ({ context, params }) => {
@@ -48,6 +63,7 @@ function ScreenEditor() {
   const [html, setHtml] = useState(screen?.html ?? "");
   const [savedHtml, setSavedHtml] = useState(screen?.html ?? "");
   const [showEditor, setShowEditor] = useState(false);
+  const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
   const [isRenaming, setIsRenaming] = useState(false);
   const [newName, setNewName] = useState(name);
 
@@ -61,7 +77,8 @@ function ScreenEditor() {
   }, [screen?.html]);
 
   const saveMutation = useMutation({
-    mutationFn: (content: string) => updateScreenFn({ data: { name, html: content } }),
+    mutationFn: (content: string) =>
+      updateScreenFn({ data: { name, html: content } }),
     onSuccess: () => {
       setSavedHtml(html);
       queryClient.invalidateQueries({ queryKey: ["screen", name] });
@@ -77,7 +94,8 @@ function ScreenEditor() {
   });
 
   const renameMutation = useMutation({
-    mutationFn: (newNameVal: string) => renameScreenFn({ data: { oldName: name, newName: newNameVal } }),
+    mutationFn: (newNameVal: string) =>
+      renameScreenFn({ data: { oldName: name, newName: newNameVal } }),
     onSuccess: (_, newNameVal) => {
       queryClient.invalidateQueries({ queryKey: ["screens"] });
       router.navigate({ to: "/s/$name", params: { name: newNameVal } });
@@ -165,6 +183,8 @@ function ScreenEditor() {
           <span className="text-xs text-zinc-400">unsaved</span>
         )}
 
+        <ViewportSegment value={viewport} onChange={setViewport} />
+
         <Button
           variant={showEditor ? "default" : "ghost"}
           size="icon"
@@ -198,17 +218,38 @@ function ScreenEditor() {
       </div>
 
       {/* Preview */}
-      <div className="flex-1 relative">
-        <iframe
-          src={`/preview/${name}`}
-          className="w-full h-full border-0"
-          title={`Preview of ${name}`}
-        />
+      <div className="flex-1 relative bg-zinc-50">
+        {viewport === "desktop" ? (
+          <iframe
+            src={`/preview/${name}`}
+            className="w-full h-full border-0 bg-white"
+            title={`Preview of ${name}`}
+          />
+        ) : (
+          <div className="w-full h-full overflow-auto flex items-start justify-center p-6">
+            <div
+              className="border border-zinc-200 bg-white rounded-lg shadow-md overflow-hidden flex-shrink-0"
+              style={{ width: 390, height: 844 }}
+            >
+              <iframe
+                src={`/preview/${name}`}
+                className="w-full h-full border-0 bg-white"
+                title={`Preview of ${name}`}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Editor panel overlay */}
         {showEditor && (
           <div className="absolute top-0 right-0 bottom-0 w-[480px] bg-white border-l border-zinc-200 overflow-hidden z-10">
-            <Suspense fallback={<div className="flex items-center justify-center h-full text-zinc-400">Loading editor...</div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-full text-zinc-400">
+                  Loading editor...
+                </div>
+              }
+            >
               <Editor
                 height="100%"
                 defaultLanguage="html"
@@ -231,5 +272,66 @@ function ScreenEditor() {
         )}
       </div>
     </div>
+  );
+}
+
+function ViewportSegment({
+  value,
+  onChange,
+}: {
+  value: "desktop" | "mobile";
+  onChange: (next: "desktop" | "mobile") => void;
+}) {
+  return (
+    <div
+      role="radiogroup"
+      aria-label="Viewport"
+      className="inline-flex items-center rounded-md border border-zinc-200 bg-zinc-50 p-0.5"
+    >
+      <SegmentButton
+        isActive={value === "desktop"}
+        onClick={() => onChange("desktop")}
+        label="Desktop"
+      >
+        <Monitor size={14} />
+      </SegmentButton>
+      <SegmentButton
+        isActive={value === "mobile"}
+        onClick={() => onChange("mobile")}
+        label="Mobile"
+      >
+        <Smartphone size={14} />
+      </SegmentButton>
+    </div>
+  );
+}
+
+function SegmentButton({
+  isActive,
+  onClick,
+  label,
+  children,
+}: {
+  isActive: boolean;
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={isActive}
+      aria-label={label}
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center justify-center h-7 w-8 rounded text-xs font-medium transition-colors",
+        isActive
+          ? "bg-white text-zinc-950 shadow-sm"
+          : "text-zinc-500 hover:text-zinc-700",
+      )}
+    >
+      {children}
+    </button>
   );
 }
