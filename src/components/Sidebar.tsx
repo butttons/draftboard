@@ -94,7 +94,7 @@ export default function Sidebar() {
         <p className="px-2.5 py-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
           Screens
         </p>
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 p-2">
           {screens.map((screen) => (
             <div key={screen.name} className="group relative">
               <Link
