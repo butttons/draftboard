@@ -105,7 +105,7 @@ export default function Sidebar() {
                 )}
               >
                 <FileCode2 size={16} />
-                <span className="truncate">{screen.name}</span>
+                <span className="truncate w-40">{screen.name}</span>
               </Link>
               <Button
                 variant="ghost"

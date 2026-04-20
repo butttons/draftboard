@@ -21,7 +21,10 @@ function NotFound() {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-zinc-900">404</h1>
         <p className="mt-2 text-zinc-500">Page not found</p>
-        <a href="/" className="mt-4 inline-block text-sm text-zinc-700 underline">
+        <a
+          href="/"
+          className="mt-4 inline-block text-sm text-zinc-700 underline"
+        >
           Back to canvas
         </a>
       </div>
@@ -44,8 +47,6 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   useSSE();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isFullScreen = pathname.startsWith("/s/");
 
   return (
     <html lang="en">
@@ -53,10 +54,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-mono antialiased bg-white text-zinc-950">
-        {!isFullScreen && <Sidebar />}
-        <main className={isFullScreen ? "" : "ml-60 min-h-screen"}>
-          {children}
-        </main>
+        <Sidebar />
+        <main className={"ml-60 min-h-screen"}>{children}</main>
         <Scripts />
       </body>
     </html>
