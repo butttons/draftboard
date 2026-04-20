@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap,
@@ -166,6 +166,8 @@ function ActiveTooltip({ activity }: { activity: McpActivity }) {
   );
 }
 
+const ACTIVE_HOLD_MS = 5000;
+
 export default function McpStatusBadge() {
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const { data: activities = [] } = useQuery({
@@ -175,7 +177,32 @@ export default function McpStatusBadge() {
   });
 
   const latestActivity = activities[0];
-  const isActive = latestActivity?.isActive === true;
+  const isTrulyActive = latestActivity?.isActive === true;
+
+  // Hold the active visual for ACTIVE_HOLD_MS after we see isActive=true
+  const [activeUntil, setActiveUntil] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isTrulyActive) {
+      setActiveUntil(Date.now() + ACTIVE_HOLD_MS);
+    }
+  }, [isTrulyActive, latestActivity?.id]);
+
+  const isActive =
+    isTrulyActive || (activeUntil != null && Date.now() < activeUntil);
+
+  // Clear hold when it expires
+  useEffect(() => {
+    if (activeUntil == null || isTrulyActive) return;
+    const remaining = activeUntil - Date.now();
+    if (remaining <= 0) {
+      setActiveUntil(null);
+      return;
+    }
+    const timer = setTimeout(() => setActiveUntil(null), remaining);
+    return () => clearTimeout(timer);
+  }, [activeUntil, isTrulyActive]);
+
   const hasRecent =
     !isActive &&
     latestActivity !== undefined &&

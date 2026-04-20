@@ -6,6 +6,7 @@ import Editor from "@monaco-editor/react";
 import { designMdQueryOptions } from "#/server/queries";
 import { saveDesignMd } from "#/server/functions";
 import { Button } from "#/components/ui/button";
+import { McpHighlight } from "#/components/McpHighlight";
 
 export const Route = createFileRoute("/design")({
   loader: async ({ context }) => {
@@ -54,7 +55,7 @@ function DesignEditor() {
   });
 
   return (
-    <div className="h-screen flex flex-col">
+    <McpHighlight target="design" className="h-screen flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 bg-white">
         <div className="flex items-center gap-2 text-sm">
           <Link to="/" className="text-zinc-400 hover:text-zinc-600 text-sm">
@@ -96,6 +97,6 @@ function DesignEditor() {
           theme="vs"
         />
       </div>
-    </div>
+    </McpHighlight>
   );
 }

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { componentsHtmlQueryOptions } from "#/server/queries";
+import { McpHighlight } from "#/components/McpHighlight";
 
 type ParsedBlock = {
   name: string;
@@ -122,7 +123,7 @@ function ComponentsPreview() {
   const blocks = parseComponentsHtml(content);
 
   return (
-    <div className="min-h-screen">
+    <McpHighlight target="components" className="min-h-screen">
       <div className="flex items-center px-4 py-2 border-b border-zinc-200 bg-white text-sm">
         <Link to="/" className="text-zinc-400 hover:text-zinc-600">
           Canvas
@@ -158,6 +159,6 @@ function ComponentsPreview() {
           ))
         )}
       </div>
-    </div>
+    </McpHighlight>
   );
 }

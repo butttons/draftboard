@@ -16,6 +16,7 @@ import { Button } from "#/components/ui/button";
 import { cn } from "#/lib/utils";
 import McpStatusBadge from "./McpStatusBadge";
 import McpSetupButton from "./McpSetupButton";
+import { McpHighlight } from "./McpHighlight";
 
 const navItems = [
   { to: "/", icon: LayoutGrid, label: "Canvas" },
@@ -87,7 +88,10 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <McpHighlight
+        target="sidebar:screens"
+        className="flex-1 overflow-y-auto p-2"
+      >
         <p className="px-2.5 py-2 text-xs font-medium text-zinc-400 uppercase tracking-wider">
           Screens
         </p>
@@ -122,9 +126,9 @@ export default function Sidebar() {
         {screens.length === 0 && (
           <p className="px-2.5 py-2 text-sm text-zinc-400">No screens yet</p>
         )}
-      </div>
+      </McpHighlight>
 
-      <div className="p-3 border-t border-zinc-200 flex items-center gap-2">
+      <div className="p-3 border-t border-zinc-200  mt-auto flex items-center gap-2">
         <McpStatusBadge />
         <McpSetupButton />
       </div>

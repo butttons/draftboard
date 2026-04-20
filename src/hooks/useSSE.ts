@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { McpActivity } from "#/server/mcp/activity";
+import { recordTargetActivation } from "./useMcpTarget";
 
 export function useSSE() {
   const queryClient = useQueryClient();
@@ -27,10 +28,14 @@ export function useSSE() {
             queryClient.invalidateQueries({ queryKey: ["layoutHtml"] });
             break;
           case "mcp_activity":
+            const incoming = data.activity as McpActivity;
+            // Fire activation before cache update so UI can react
+            if (incoming.isActive) {
+              recordTargetActivation(incoming.action, incoming.screenName);
+            }
             queryClient.setQueryData<McpActivity[]>(
               ["mcpActivities"],
               (prev = []) => {
-                const incoming = data.activity as McpActivity;
                 if (incoming.isActive) {
                   // Tool started: insert at front
                   return [incoming, ...prev].slice(0, 50);

@@ -19,6 +19,7 @@ import {
 } from "#/server/functions";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { McpHighlight } from "#/components/McpHighlight";
 
 const Editor = lazy(() =>
   import("@monaco-editor/react").then((module) => ({ default: module.default })),
@@ -128,7 +129,7 @@ function ScreenEditor() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <McpHighlight target={`screen:${name}`} className="h-screen flex flex-col">
       {/* Top bar */}
       <div className="h-10 bg-white border-b border-zinc-200 flex items-center gap-2 px-3 flex-shrink-0">
         <Link
@@ -271,7 +272,7 @@ function ScreenEditor() {
           </div>
         )}
       </div>
-    </div>
+    </McpHighlight>
   );
 }
 

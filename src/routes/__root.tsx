@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-router";
 import Sidebar from "../components/Sidebar";
 import { useSSE } from "../hooks/useSSE";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 import appCss from "../styles.css?url";
 
@@ -54,8 +55,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="font-mono antialiased bg-white text-zinc-950">
-        <Sidebar />
-        <main className={"ml-60 min-h-screen"}>{children}</main>
+        <TooltipProvider>
+          <Sidebar />
+          <main className={"ml-60 min-h-screen"}>{children}</main>
+        </TooltipProvider>
         <Scripts />
       </body>
     </html>

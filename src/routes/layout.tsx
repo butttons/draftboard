@@ -6,6 +6,7 @@ import Editor from "@monaco-editor/react";
 import { layoutHtmlQueryOptions } from "#/server/queries";
 import { saveLayoutHtml } from "#/server/functions";
 import { Button } from "#/components/ui/button";
+import { McpHighlight } from "#/components/McpHighlight";
 
 export const Route = createFileRoute("/layout")({
   loader: async ({ context }) => {
@@ -48,7 +49,7 @@ function LayoutEditor() {
   });
 
   return (
-    <div className="h-screen flex flex-col">
+    <McpHighlight target="layout" className="h-screen flex flex-col">
       <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-200 bg-white">
         <div className="flex items-center gap-2 text-sm">
           <Link to="/" className="text-zinc-400 hover:text-zinc-600 text-sm">
@@ -90,6 +91,6 @@ function LayoutEditor() {
           theme="vs"
         />
       </div>
-    </div>
+    </McpHighlight>
   );
 }

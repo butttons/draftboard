@@ -7,6 +7,7 @@ import { createScreenFn, deleteScreenFn, isValidScreenName } from "#/server/func
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Card, CardContent } from "#/components/ui/card";
+import { McpHighlight } from "#/components/McpHighlight";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -77,37 +78,39 @@ function Canvas() {
 
       <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,1fr))]">
         {screens.map((screen) => (
-          <Card key={screen.name} className="group relative overflow-hidden">
-            <Link to="/s/$name" params={{ name: screen.name }} className="block no-underline">
-              <div className="aspect-[4/3] bg-zinc-50 overflow-hidden">
-                <iframe
-                  src={`/preview/${screen.name}`}
-                  className="w-[400%] h-[400%] origin-top-left scale-[0.25] pointer-events-none border-0"
-                  style={{ width: "400%", height: "400%" }}
-                  title={`Preview of ${screen.name}`}
-                />
-              </div>
-              <CardContent className="p-3">
-                <p className="text-sm font-medium text-zinc-950 truncate">{screen.name}</p>
-                <p className="flex items-center gap-1 text-xs text-zinc-400 mt-1">
-                  <Clock size={12} />
-                  {formatDate(screen.updated_at)}
-                </p>
-              </CardContent>
-            </Link>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:border-red-300"
-              onClick={(event) => {
-                event.preventDefault();
-                deleteMutation.mutate(screen.name);
-              }}
-              aria-label={`Delete ${screen.name}`}
-            >
-              <Trash2 size={14} />
-            </Button>
-          </Card>
+          <McpHighlight key={screen.name} target={`canvas:screen:${screen.name}`}>
+            <Card className="group relative overflow-hidden">
+              <Link to="/s/$name" params={{ name: screen.name }} className="block no-underline">
+                <div className="aspect-[4/3] bg-zinc-50 overflow-hidden">
+                  <iframe
+                    src={`/preview/${screen.name}`}
+                    className="w-[400%] h-[400%] origin-top-left scale-[0.25] pointer-events-none border-0"
+                    style={{ width: "400%", height: "400%" }}
+                    title={`Preview of ${screen.name}`}
+                  />
+                </div>
+                <CardContent className="p-3">
+                  <p className="text-sm font-medium text-zinc-950 truncate">{screen.name}</p>
+                  <p className="flex items-center gap-1 text-xs text-zinc-400 mt-1">
+                    <Clock size={12} />
+                    {formatDate(screen.updated_at)}
+                  </p>
+                </CardContent>
+              </Link>
+              <Button
+                variant="outline"
+                size="icon"
+                className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:border-red-300"
+                onClick={(event) => {
+                  event.preventDefault();
+                  deleteMutation.mutate(screen.name);
+                }}
+                aria-label={`Delete ${screen.name}`}
+              >
+                <Trash2 size={14} />
+              </Button>
+            </Card>
+          </McpHighlight>
         ))}
 
         {/* New screen card */}
