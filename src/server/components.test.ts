@@ -40,7 +40,7 @@ describe("validateComponentInput", () => {
 			props: [],
 			slots: [],
 		});
-		expect(errors.some((e) => e.includes("Do not include"))).toBe(true);
+		expect(errors.some((message) => message.includes("Do not include"))).toBe(true);
 	});
 
 	it("rejects full-document tags", () => {
@@ -51,7 +51,7 @@ describe("validateComponentInput", () => {
 				props: [],
 				slots: [],
 			});
-			expect(errors.some((e) => e.toLowerCase().includes("fragment"))).toBe(true);
+			expect(errors.some((message) => message.toLowerCase().includes("fragment"))).toBe(true);
 		}
 	});
 
@@ -63,7 +63,7 @@ describe("validateComponentInput", () => {
 				props: [],
 				slots: [],
 			});
-			expect(errors.some((e) => e.includes("kebab-case"))).toBe(true);
+			expect(errors.some((message) => message.includes("kebab-case"))).toBe(true);
 		}
 	});
 
@@ -86,7 +86,7 @@ describe("validateComponentInput", () => {
 			props: [],
 			slots: [],
 		});
-		expect(errors.some((e) => e.includes("non-empty"))).toBe(true);
+		expect(errors.some((message) => message.includes("non-empty"))).toBe(true);
 	});
 
 	it("errors on undeclared {{prop}} references", () => {
@@ -96,7 +96,7 @@ describe("validateComponentInput", () => {
 			props: [],
 			slots: [],
 		});
-		expect(errors.some((e) => e.includes('"title"') && e.includes("Undeclared prop"))).toBe(true);
+		expect(errors.some((message) => message.includes('"title"') && message.includes("Undeclared prop"))).toBe(true);
 	});
 
 	it("errors on undeclared slot references", () => {
@@ -106,7 +106,7 @@ describe("validateComponentInput", () => {
 			props: [],
 			slots: [],
 		});
-		expect(errors.some((e) => e.includes('"body"') && e.includes("Undeclared slot"))).toBe(true);
+		expect(errors.some((message) => message.includes('"body"') && message.includes("Undeclared slot"))).toBe(true);
 	});
 
 	it("warns (not errors) on declared-but-unused props/slots", () => {
@@ -168,7 +168,7 @@ describe("upsertComponent", () => {
 			variant: "primary",
 			cwd,
 		});
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list).toHaveLength(1);
 		expect(list[0]).toMatchObject({
 			name: "info-card",
@@ -182,7 +182,7 @@ describe("upsertComponent", () => {
 		upsertComponent({ name: "btn", html: "<button>v1</button>", cwd });
 		const second = upsertComponent({ name: "btn", html: "<button>v2</button>", cwd });
 		expect(second.match({ ok: ({ created }) => created, err: () => null })).toBe(false);
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list).toHaveLength(1);
 		expect(list[0].html).toContain("v2");
 	});
@@ -190,7 +190,7 @@ describe("upsertComponent", () => {
 	it("treats different variants as distinct components", () => {
 		upsertComponent({ name: "btn", variant: "primary", html: "<b>p</b>", cwd });
 		upsertComponent({ name: "btn", variant: "secondary", html: "<b>s</b>", cwd });
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list).toHaveLength(2);
 		expect(list.map((c) => c.variant).sort()).toEqual(["primary", "secondary"]);
 	});
@@ -225,7 +225,7 @@ describe("deleteComponent", () => {
 		upsertComponent({ name: "btn", variant: "secondary", html: "<b>s</b>", cwd });
 		const del = deleteComponent({ name: "btn", variant: "primary", cwd });
 		expect(del.isOk()).toBe(true);
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list).toHaveLength(1);
 		expect(list[0].variant).toBe("secondary");
 	});
@@ -242,7 +242,7 @@ describe("parseComponents (via listComponents)", () => {
 		writeComponents(
 			'<!-- legacy:start -->\n<div>{{title}}<!-- slot:x --></div>\n<!-- legacy:end -->',
 		);
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list[0].props).toEqual(["title"]);
 		expect(list[0].slots).toEqual(["x"]);
 	});
@@ -251,52 +251,52 @@ describe("parseComponents (via listComponents)", () => {
 		writeComponents(
 			'<!-- card:start props="title,body" slots="footer" -->\n<p>{{title}}</p>\n<!-- card:end -->',
 		);
-		const list = listComponents(cwd);
+		const list = listComponents({ cwd });
 		expect(list[0].props).toEqual(["title", "body"]);
 		expect(list[0].slots).toEqual(["footer"]);
 	});
 
 	it("returns [] when components.html is absent", () => {
-		expect(listComponents(cwd)).toEqual([]);
+		expect(listComponents({ cwd })).toEqual([]);
 	});
 
 	it("resolves getComponent by name+variant", () => {
 		upsertComponent({ name: "btn", variant: "primary", html: "<b>p</b>", cwd });
 		upsertComponent({ name: "btn", variant: "secondary", html: "<b>s</b>", cwd });
-		expect(getComponent("btn", "primary", cwd)?.html).toContain("p");
-		expect(getComponent("btn", "secondary", cwd)?.html).toContain("s");
-		expect(getComponent("btn", "missing", cwd)).toBeNull();
+		expect(getComponent({ name: "btn", variant: "primary", cwd })?.html).toContain("p");
+		expect(getComponent({ name: "btn", variant: "secondary", cwd })?.html).toContain("s");
+		expect(getComponent({ name: "btn", variant: "missing", cwd })).toBeNull();
 	});
 });
 
 describe("renderComponent", () => {
 	it("substitutes declared props with passed values", () => {
-		const out = renderComponent(
-			{ name: "card", props: ["title", "body"], slots: [], html: "<h>{{title}}</h><p>{{body}}</p>" },
-			{ title: "T", body: "B" },
-		);
+		const out = renderComponent({
+			component: { name: "card", props: ["title", "body"], slots: [], html: "<h>{{title}}</h><p>{{body}}</p>" },
+			props: { title: "T", body: "B" },
+		});
 		expect(out).toBe("<h>T</h><p>B</p>");
 	});
 
 	it("replaces unfilled slots with TODO placeholders, leaves filled-slot markers untouched for caller substitution", () => {
-		const out = renderComponent(
-			{
+		const out = renderComponent({
+			component: {
 				name: "card",
 				props: [],
 				slots: ["action", "footer"],
 				html: "<!-- slot:action -->|<!-- slot:footer -->",
 			},
-			{ action: "<button/>" },
-		);
+			props: { action: "<button/>" },
+		});
 		expect(out).toContain("TODO: add footer content");
 		expect(out).toContain("<!-- slot:action -->");
 	});
 
 	it("leaves placeholders alone when their props are not provided", () => {
-		const out = renderComponent(
-			{ name: "card", props: ["title"], slots: [], html: "<h>{{title}}</h>" },
-			{},
-		);
+		const out = renderComponent({
+			component: { name: "card", props: ["title"], slots: [], html: "<h>{{title}}</h>" },
+			props: {},
+		});
 		expect(out).toBe("<h>{{title}}</h>");
 	});
 });

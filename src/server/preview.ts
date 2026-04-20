@@ -36,35 +36,35 @@ const LIVE_LAYOUT = `<!doctype html>
       var es = new EventSource('/sse');
       es.onmessage = function(ev) {
         try {
-          var d = JSON.parse(ev.data);
-          if (d.type === 'screen_changed' && d.name === name) {
+          var data = JSON.parse(ev.data);
+          if (data.type === 'screen_changed' && data.name === name) {
             window.location.reload();
           }
-        } catch(e) {}
+        } catch(error) {}
       };
     })();
   </script>
 </body>
 </html>`;
 
-export function generatePreviewHtml(screenName: string): string {
-  const screen = getScreen(screenName);
-  if (!screen) {
-    return errorHtml(screenName);
-  }
+export function generatePreviewHtml({ screenName }: { screenName: string }): string {
+	const screen = getScreen({ name: screenName });
+	if (!screen) {
+		return buildErrorHtml({ name: screenName });
+	}
 
-  const content = screen.html.trim();
-  return LIGHTWEIGHT_LAYOUT.replace("{{content}}", content);
+	const content = screen.html.trim();
+	return LIGHTWEIGHT_LAYOUT.replace("{{content}}", content);
 }
 
-export function generateLivePreviewHtml(screenName: string): string {
-  const screen = getScreen(screenName);
-  if (!screen) {
-    return errorHtml(screenName);
-  }
+export function generateLivePreviewHtml({ screenName }: { screenName: string }): string {
+	const screen = getScreen({ name: screenName });
+	if (!screen) {
+		return buildErrorHtml({ name: screenName });
+	}
 
-  const content = screen.html.trim();
-  return LIVE_LAYOUT.replace("{{content}}", content);
+	const content = screen.html.trim();
+	return LIVE_LAYOUT.replace("{{content}}", content);
 }
 
 const COMPONENT_LAYOUT = `<!doctype html>
@@ -83,33 +83,33 @@ const COMPONENT_LAYOUT = `<!doctype html>
     var es = new EventSource('/sse');
     es.onmessage = function(ev) {
       try {
-        var d = JSON.parse(ev.data);
-        if (d.type === 'components_changed') window.location.reload();
-      } catch(e) {}
+        var data = JSON.parse(ev.data);
+        if (data.type === 'components_changed') window.location.reload();
+      } catch(error) {}
     };
   </script>
 </body>
 </html>`;
 
 export function generateComponentPreviewHtml({
-  name,
-  variant,
+	name,
+	variant,
 }: {
-  name: string;
-  variant?: string;
+	name: string;
+	variant?: string;
 }): string {
-  const component = getComponent(name, variant);
-  if (!component) {
-    return errorHtml(variant ? `${name}:${variant}` : name);
-  }
-  const sampleProps: Record<string, string> = {};
-  for (const p of component.props) sampleProps[p] = p;
-  const content = renderComponent(component, sampleProps);
-  return COMPONENT_LAYOUT.replace("{{content}}", content);
+	const component = getComponent({ name, variant });
+	if (!component) {
+		return buildErrorHtml({ name: variant ? `${name}:${variant}` : name });
+	}
+	const sampleProps: Record<string, string> = {};
+	for (const prop of component.props) sampleProps[prop] = prop;
+	const content = renderComponent({ component, props: sampleProps });
+	return COMPONENT_LAYOUT.replace("{{content}}", content);
 }
 
-function errorHtml(name: string): string {
-  return `<!doctype html>
+function buildErrorHtml({ name }: { name: string }): string {
+	return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">

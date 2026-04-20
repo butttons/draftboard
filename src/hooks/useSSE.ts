@@ -29,7 +29,26 @@ export function useSSE() {
           case "mcp_activity":
             queryClient.setQueryData<McpActivity[]>(
               ["mcpActivities"],
-              (prev = []) => [data.activity, ...prev].slice(0, 50),
+              (prev = []) => {
+                const incoming = data.activity as McpActivity;
+                if (incoming.isActive) {
+                  // Tool started: insert at front
+                  return [incoming, ...prev].slice(0, 50);
+                }
+                // Tool completed: update the matching start entry or insert fresh
+                const matchIndex = prev.findIndex(
+                  (entry) =>
+                    entry.isActive &&
+                    entry.action === incoming.action &&
+                    entry.screenName === incoming.screenName,
+                );
+                if (matchIndex !== -1) {
+                  const updated = [...prev];
+                  updated[matchIndex] = incoming;
+                  return updated;
+                }
+                return [incoming, ...prev].slice(0, 50);
+              },
             );
             break;
         }

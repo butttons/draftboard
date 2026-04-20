@@ -31,23 +31,23 @@ export type ScaffoldResult = {
 	created: string[];
 };
 
-export function isProjectInitialized(cwd: string = process.cwd()): boolean {
+export function isProjectInitialized({ cwd = process.cwd() }: { cwd?: string } = {}): boolean {
 	return existsSync(join(getDesignDir(cwd), "design.md"));
 }
 
-export function ensureDesignDirs(cwd: string = process.cwd()): void {
+export function ensureDesignDirs({ cwd = process.cwd() }: { cwd?: string } = {}): void {
 	const designDir = getDesignDir(cwd);
 	const screensDir = getScreensDir(cwd);
 	if (!existsSync(designDir)) mkdirSync(designDir, { recursive: true });
 	if (!existsSync(screensDir)) mkdirSync(screensDir, { recursive: true });
 }
 
-export function scaffoldDesignDir(cwd: string = process.cwd()): ScaffoldResult {
-	if (isProjectInitialized(cwd)) {
+export function scaffoldDesignDir({ cwd = process.cwd() }: { cwd?: string } = {}): ScaffoldResult {
+	if (isProjectInitialized({ cwd })) {
 		return { alreadyInitialized: true, created: [] };
 	}
 
-	ensureDesignDirs(cwd);
+	ensureDesignDirs({ cwd });
 
 	const designDir = getDesignDir(cwd);
 	const created: string[] = [];
@@ -58,21 +58,21 @@ export function scaffoldDesignDir(cwd: string = process.cwd()): ScaffoldResult {
 		{ path: join(designDir, "layout.html"), content: DEFAULT_LAYOUT_HTML, label: "layout.html" },
 	];
 
-	for (const f of files) {
-		if (!existsSync(f.path)) {
-			writeFileSync(f.path, f.content);
-			created.push(f.label);
+	for (const file of files) {
+		if (!existsSync(file.path)) {
+			writeFileSync(file.path, file.content);
+			created.push(file.label);
 		}
 	}
 
 	return { alreadyInitialized: false, created };
 }
 
-export function listScreens(cwd: string = process.cwd()): Screen[] {
+export function listScreens({ cwd = process.cwd() }: { cwd?: string } = {}): Screen[] {
 	const screensDir = getScreensDir(cwd);
 	if (!existsSync(screensDir)) return [];
 
-	const files = readdirSync(screensDir).filter((f) => f.endsWith(".html"));
+	const files = readdirSync(screensDir).filter((file) => file.endsWith(".html"));
 	return files.map((file) => {
 		const name = file.replace(/\.html$/, "");
 		const filePath = join(screensDir, file);
@@ -85,22 +85,30 @@ export function listScreens(cwd: string = process.cwd()): Screen[] {
 	});
 }
 
-export function getScreen(
-	name: string,
-	cwd: string = process.cwd(),
-): { name: string; html: string } | null {
+export function getScreen({
+	name,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	cwd?: string;
+}): { name: string; html: string } | null {
 	if (!validateScreenName(name)) return null;
 	const filePath = join(getScreensDir(cwd), `${name}.html`);
 	if (!existsSync(filePath)) return null;
 	return { name, html: readFileSync(filePath, "utf-8") };
 }
 
-export function getScreenLines(
-	name: string,
-	start: number,
-	end: number,
-	cwd: string = process.cwd(),
-): Result<
+export function getScreenLines({
+	name,
+	start,
+	end,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	start: number;
+	end: number;
+	cwd?: string;
+}): Result<
 	{ name: string; lines: string[]; start: number; end: number; total: number },
 	string
 > {
@@ -122,13 +130,19 @@ export function getScreenLines(
 	return Result.ok({ name, lines, start, end: Math.min(end, total), total });
 }
 
-export function updateScreenLines(
-	name: string,
-	start: number,
-	end: number,
-	content: string,
-	cwd: string = process.cwd(),
-): Result<void, string> {
+export function updateScreenLines({
+	name,
+	start,
+	end,
+	content,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	start: number;
+	end: number;
+	content: string;
+	cwd?: string;
+}): Result<void, string> {
 	if (!validateScreenName(name)) {
 		return Result.err("Invalid screen name.");
 	}
@@ -155,16 +169,20 @@ export function updateScreenLines(
 	try {
 		writeFileSync(filePath, joined);
 		return Result.ok(undefined);
-	} catch (e) {
-		return Result.err(e instanceof Error ? e.message : String(e));
+	} catch (error) {
+		return Result.err(error instanceof Error ? error.message : String(error));
 	}
 }
 
-export function createScreen(
-	name: string,
-	html: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function createScreen({
+	name,
+	html,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	html: string;
+	cwd?: string;
+}): Result<void, Error> {
 	if (!validateScreenName(name)) {
 		return Result.err(
 			new Error("Invalid screen name. Use kebab-case, no path separators."),
@@ -177,11 +195,15 @@ export function createScreen(
 	return Result.try(() => writeFileSync(filePath, html));
 }
 
-export function updateScreen(
-	name: string,
-	html: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function updateScreen({
+	name,
+	html,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	html: string;
+	cwd?: string;
+}): Result<void, Error> {
 	if (!validateScreenName(name)) {
 		return Result.err(
 			new Error("Invalid screen name. Use kebab-case, no path separators."),
@@ -194,10 +216,13 @@ export function updateScreen(
 	return Result.try(() => writeFileSync(filePath, html));
 }
 
-export function deleteScreen(
-	name: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function deleteScreen({
+	name,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	cwd?: string;
+}): Result<void, Error> {
 	if (!validateScreenName(name)) {
 		return Result.err(
 			new Error("Invalid screen name. Use kebab-case, no path separators."),
@@ -210,11 +235,15 @@ export function deleteScreen(
 	return Result.try(() => unlinkSync(filePath));
 }
 
-export function renameScreen(
-	oldName: string,
-	newName: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function renameScreen({
+	oldName,
+	newName,
+	cwd = process.cwd(),
+}: {
+	oldName: string;
+	newName: string;
+	cwd?: string;
+}): Result<void, Error> {
 	if (!validateScreenName(oldName) || !validateScreenName(newName)) {
 		return Result.err(
 			new Error("Invalid screen name. Use kebab-case, no path separators."),
@@ -267,13 +296,13 @@ export function renameScreenWithLinks({
 		const escaped = from.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 		const hrefRe = new RegExp(`href="((?:/p/)?)${escaped}(/?)"`, "g");
 		const files = readdirSync(screensDir).filter(
-			(f) => f.endsWith(".html") && f !== `${from}.html`,
+			(file) => file.endsWith(".html") && file !== `${from}.html`,
 		);
 		for (const file of files) {
 			const filePath = join(screensDir, file);
 			const content = readFileSync(filePath, "utf-8");
 			let count = 0;
-			const next = content.replace(hrefRe, (_m, prefix, trailing) => {
+			const next = content.replace(hrefRe, (_match, prefix, trailing) => {
 				count++;
 				return `href="${prefix}${to}${trailing}"`;
 			});
@@ -286,16 +315,16 @@ export function renameScreenWithLinks({
 
 	try {
 		renameSync(oldPath, newPath);
-		for (const p of pending) {
-			writeFileSync(p.path, p.content);
+		for (const pendingFile of pending) {
+			writeFileSync(pendingFile.path, pendingFile.content);
 		}
-	} catch (e) {
-		return Result.err(e instanceof Error ? e : new Error(String(e)));
+	} catch (error) {
+		return Result.err(error instanceof Error ? error : new Error(String(error)));
 	}
 	return Result.ok({ renamed: true, links_updated: linksUpdated });
 }
 
-export function getConventions(cwd: string = process.cwd()): string {
+export function getConventions({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	const designDir = getDesignDir(cwd);
 	const designMdPath = join(designDir, "design.md");
 	const componentsPath = join(designDir, "components.html");
@@ -319,63 +348,75 @@ export function getConventions(cwd: string = process.cwd()): string {
 	return result;
 }
 
-export function getDesignMd(cwd: string = process.cwd()): string {
+export function getDesignMd({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	const filePath = join(getDesignDir(cwd), "design.md");
 	if (!existsSync(filePath)) return "";
 	return readFileSync(filePath, "utf-8");
 }
 
-export function writeDesignMd(
-	content: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function writeDesignMd({
+	content,
+	cwd = process.cwd(),
+}: {
+	content: string;
+	cwd?: string;
+}): Result<void, Error> {
 	const filePath = join(getDesignDir(cwd), "design.md");
 	return Result.try(() => writeFileSync(filePath, content));
 }
 
-export function getComponentsHtml(cwd: string = process.cwd()): string {
+export function getComponentsHtml({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	const filePath = join(getDesignDir(cwd), "components.html");
 	if (!existsSync(filePath)) return "";
 	return readFileSync(filePath, "utf-8");
 }
 
-export function writeComponentsHtml(
-	content: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function writeComponentsHtml({
+	content,
+	cwd = process.cwd(),
+}: {
+	content: string;
+	cwd?: string;
+}): Result<void, Error> {
 	const filePath = join(getDesignDir(cwd), "components.html");
 	return Result.try(() => writeFileSync(filePath, content));
 }
 
-export function getLayoutHtml(cwd: string = process.cwd()): string {
+export function getLayoutHtml({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	const filePath = join(getDesignDir(cwd), "layout.html");
 	if (!existsSync(filePath)) return DEFAULT_LAYOUT_HTML;
 	return readFileSync(filePath, "utf-8");
 }
 
-export function writeLayoutHtml(
-	content: string,
-	cwd: string = process.cwd(),
-): Result<void, Error> {
+export function writeLayoutHtml({
+	content,
+	cwd = process.cwd(),
+}: {
+	content: string;
+	cwd?: string;
+}): Result<void, Error> {
 	const filePath = join(getDesignDir(cwd), "layout.html");
 	return Result.try(() => writeFileSync(filePath, content));
 }
 
-export function getDesignFilePath(cwd: string = process.cwd()): string {
+export function getDesignFilePath({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	return join(getDesignDir(cwd), "design.md");
 }
 
-export function getComponentsFilePath(cwd: string = process.cwd()): string {
+export function getComponentsFilePath({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	return join(getDesignDir(cwd), "components.html");
 }
 
-export function getLayoutFilePath(cwd: string = process.cwd()): string {
+export function getLayoutFilePath({ cwd = process.cwd() }: { cwd?: string } = {}): string {
 	return join(getDesignDir(cwd), "layout.html");
 }
 
-export function getScreenFilePath(
-	name: string,
-	cwd: string = process.cwd(),
-): string {
+export function getScreenFilePath({
+	name,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	cwd?: string;
+}): string {
 	return join(getScreensDir(cwd), `${name}.html`);
 }

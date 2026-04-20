@@ -14,9 +14,9 @@ type ParsedBlock = {
 function parseMarkerAttrs(str: string): Record<string, string> {
   const attrs: Record<string, string> = {};
   const re = /(\w+)=(?:"([^"]*)"|(\S+))/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(str)) !== null) {
-    attrs[m[1]] = m[2] ?? m[3];
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(str)) !== null) {
+    attrs[match[1]] = match[2] ?? match[3];
   }
   return attrs;
 }
@@ -25,22 +25,22 @@ function splitList(value: string | undefined): string[] {
   if (!value) return [];
   return value
     .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
 }
 
 function parseComponentsHtml(content: string): ParsedBlock[] {
   const blocks: ParsedBlock[] = [];
   const re = /<!-- ([a-zA-Z][\w-]*):start(.*?) -->([\s\S]*?)<!-- \1:end -->/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(content)) !== null) {
-    const attrs = parseMarkerAttrs(m[2].trim());
+  let match: RegExpExecArray | null;
+  while ((match = re.exec(content)) !== null) {
+    const attrs = parseMarkerAttrs(match[2].trim());
     blocks.push({
-      name: m[1],
+      name: match[1],
       variant: attrs.variant,
       props: splitList(attrs.props),
       slots: splitList(attrs.slots),
-      html: m[3].trim(),
+      html: match[3].trim(),
     });
   }
   return blocks;

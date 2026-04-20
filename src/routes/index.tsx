@@ -67,8 +67,8 @@ function Canvas() {
   }
 
   function formatDate(iso: string) {
-    const d = new Date(iso);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    const date = new Date(iso);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
   }
 
   return (
@@ -99,8 +99,8 @@ function Canvas() {
               variant="outline"
               size="icon"
               className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 hover:border-red-300"
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={(event) => {
+                event.preventDefault();
                 deleteMutation.mutate(screen.name);
               }}
               aria-label={`Delete ${screen.name}`}
@@ -114,15 +114,15 @@ function Canvas() {
         <Card className="border-dashed bg-zinc-50 flex flex-col items-center justify-center aspect-[4/3]">
           {isCreating ? (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
+              onSubmit={(event) => {
+                event.preventDefault();
                 handleCreate();
               }}
               className="p-4 w-full space-y-2"
             >
               <Input
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={(event) => setNewName(event.target.value)}
                 placeholder="screen-name"
                 autoFocus
               />

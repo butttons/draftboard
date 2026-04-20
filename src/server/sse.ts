@@ -9,8 +9,8 @@ export function createSSEStream(): ReadableStream {
   let removeActivityListener: (() => void) | null = null;
 
   return new ReadableStream({
-    start(ctrl) {
-      controller = ctrl;
+    start(streamController) {
+      controller = streamController;
 
       // Send initial ping
       controller.enqueue(encoder.encode("data: {\"type\":\"connected\"}\n\n"));

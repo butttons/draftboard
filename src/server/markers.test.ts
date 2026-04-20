@@ -34,7 +34,7 @@ describe("parseMarkers", () => {
 	it("does not conflate different marker names", () => {
 		const content = `<!-- a:start -->\n<!-- b:start -->\nbody\n<!-- b:end -->\n<!-- a:end -->`;
 		const markers = unwrap(parseMarkers(content));
-		expect(markers.map((m) => m.name)).toEqual(["a", "b"]);
+		expect(markers.map((marker) => marker.name)).toEqual(["a", "b"]);
 	});
 
 	it("records accurate line numbers", () => {

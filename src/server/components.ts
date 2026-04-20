@@ -34,23 +34,23 @@ function splitList(value: string | undefined): string[] {
 	if (!value) return [];
 	return value
 		.split(",")
-		.map((s) => s.trim())
-		.filter((s) => s.length > 0);
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0);
 }
 
 export function extractReferencedProps(html: string): string[] {
 	const names = new Set<string>();
 	const re = /\{\{\s*([a-zA-Z_][\w-]*)\s*\}\}/g;
-	let m: RegExpExecArray | null;
-	while ((m = re.exec(html)) !== null) names.add(m[1]);
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(html)) !== null) names.add(match[1]);
 	return [...names];
 }
 
 export function extractReferencedSlots(html: string): string[] {
 	const names = new Set<string>();
 	const re = /<!--\s*slot:([a-zA-Z_][\w-]*)\s*-->/g;
-	let m: RegExpExecArray | null;
-	while ((m = re.exec(html)) !== null) names.add(m[1]);
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(html)) !== null) names.add(match[1]);
 	return [...names];
 }
 
@@ -79,7 +79,7 @@ function parseComponents(content: string): Component[] {
 	return components;
 }
 
-export function listComponents(cwd: string = process.cwd()): Component[] {
+export function listComponents({ cwd = process.cwd() }: { cwd?: string } = {}): Component[] {
 	try {
 		const content = readFileSync(getComponentsPath(cwd), "utf-8");
 		return parseComponents(content);
@@ -88,22 +88,26 @@ export function listComponents(cwd: string = process.cwd()): Component[] {
 	}
 }
 
-export function getComponent(
-	name: string,
-	variant?: string,
-	cwd: string = process.cwd(),
-): Component | null {
-	const components = listComponents(cwd);
+export function getComponent({
+	name,
+	variant,
+	cwd = process.cwd(),
+}: {
+	name: string;
+	variant?: string;
+	cwd?: string;
+}): Component | null {
+	const components = listComponents({ cwd });
 	return (
 		components.find(
-			(c) => c.name === name && (!variant || c.variant === variant),
+			(component) => component.name === name && (!variant || component.variant === variant),
 		) ?? null
 	);
 }
 
-export function getComponentNames(cwd: string = process.cwd()): string[] {
-	const components = listComponents(cwd);
-	return [...new Set(components.map((c) => c.name))];
+export function getComponentNames({ cwd = process.cwd() }: { cwd?: string } = {}): string[] {
+	const components = listComponents({ cwd });
+	return [...new Set(components.map((component) => component.name))];
 }
 
 function buildComponentBlock({
@@ -215,14 +219,14 @@ export function validateComponentInput({
 			);
 		}
 	}
-	for (const p of declaredProps) {
-		if (!referencedProps.has(p)) {
-			warnings.push(`Declared prop "${p}" is unused in html.`);
+	for (const propName of declaredProps) {
+		if (!referencedProps.has(propName)) {
+			warnings.push(`Declared prop "${propName}" is unused in html.`);
 		}
 	}
-	for (const s of declaredSlots) {
-		if (!referencedSlots.has(s)) {
-			warnings.push(`Declared slot "${s}" is unused in html.`);
+	for (const slotName of declaredSlots) {
+		if (!referencedSlots.has(slotName)) {
+			warnings.push(`Declared slot "${slotName}" is unused in html.`);
 		}
 	}
 
@@ -249,8 +253,8 @@ export function upsertComponent({
 		return Result.err(new Error(validation.errors.join("\n")));
 	}
 
-	const path = getComponentsPath(cwd);
-	const existing = existsSync(path) ? readFileSync(path, "utf-8") : "";
+	const filePath = getComponentsPath(cwd);
+	const existing = existsSync(filePath) ? readFileSync(filePath, "utf-8") : "";
 	const block = buildComponentBlock({ name, variant, props, slots, html });
 	const range = findBlockRange({ content: existing, name, variant });
 
@@ -264,7 +268,7 @@ export function upsertComponent({
 		next = existing + sep + block + "\n";
 		created = true;
 	}
-	return Result.try(() => writeFileSync(path, next)).map(() => ({
+	return Result.try(() => writeFileSync(filePath, next)).map(() => ({
 		created,
 		warnings: validation.warnings,
 	}));
@@ -279,11 +283,11 @@ export function deleteComponent({
 	variant?: string;
 	cwd?: string;
 }): Result<void, Error> {
-	const path = getComponentsPath(cwd);
-	if (!existsSync(path)) {
+	const filePath = getComponentsPath(cwd);
+	if (!existsSync(filePath)) {
 		return Result.err(new Error("components.html does not exist."));
 	}
-	const existing = readFileSync(path, "utf-8");
+	const existing = readFileSync(filePath, "utf-8");
 	const range = findBlockRange({ content: existing, name, variant });
 	if (!range) {
 		const label = variant ? `${name}:${variant}` : name;
@@ -291,13 +295,16 @@ export function deleteComponent({
 	}
 	let next = existing.slice(0, range.start) + existing.slice(range.end);
 	next = next.replace(/\n{3,}/g, "\n\n");
-	return Result.try(() => writeFileSync(path, next));
+	return Result.try(() => writeFileSync(filePath, next));
 }
 
-export function renderComponent(
-	component: Component,
-	props: Record<string, string> = {},
-): string {
+export function renderComponent({
+	component,
+	props = {},
+}: {
+	component: Component;
+	props?: Record<string, string>;
+}): string {
 	let html = component.html;
 	for (const [key, value] of Object.entries(props)) {
 		html = html.replaceAll(`{{${key}}}`, value);

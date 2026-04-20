@@ -21,7 +21,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 
 const Editor = lazy(() =>
-  import("@monaco-editor/react").then((m) => ({ default: m.default })),
+  import("@monaco-editor/react").then((module) => ({ default: module.default })),
 );
 
 export const Route = createFileRoute("/s/$name")({
@@ -108,9 +108,9 @@ function ScreenEditor() {
   }, [html, saveMutation]);
 
   useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
+    function handleKeyDown(keyboardEvent: KeyboardEvent) {
+      if ((keyboardEvent.metaKey || keyboardEvent.ctrlKey) && keyboardEvent.key === "s") {
+        keyboardEvent.preventDefault();
         save();
       }
     }
@@ -153,14 +153,14 @@ function ScreenEditor() {
 
         {isRenaming ? (
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={(event) => {
+              event.preventDefault();
               handleRename();
             }}
           >
             <Input
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
+              onChange={(event) => setNewName(event.target.value)}
               autoFocus
               className="h-7 w-32 text-sm"
               onBlur={handleRename}

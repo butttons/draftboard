@@ -19,7 +19,7 @@ export default function McpSetupButton() {
 
   function getConfigSnippet() {
     return JSON.stringify(
-      { mcpServers: { design: { url: getMcpUrl() } } },
+      { mcpServers: { draftboard: { url: getMcpUrl() } } },
       null,
       2,
     );

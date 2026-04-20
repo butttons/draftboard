@@ -20,19 +20,19 @@ const END_RE_SOURCE = (name: string): RegExp =>
 function parseMarkerAttrs(str: string): MarkerProps {
 	const attrs: MarkerProps = {};
 	const re = /(\w+)=(?:"([^"]*)"|(\S+))/g;
-	let m: RegExpExecArray | null;
-	while ((m = re.exec(str)) !== null) {
-		attrs[m[1]] = m[2] ?? m[3];
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(str)) !== null) {
+		attrs[match[1]] = match[2] ?? match[3];
 	}
 	return attrs;
 }
 
 function lineOf({ content, offset }: { content: string; offset: number }): number {
-	let line = 1;
-	for (let i = 0; i < offset && i < content.length; i++) {
-		if (content[i] === "\n") line++;
+	let lineNumber = 1;
+	for (let index = 0; index < offset && index < content.length; index++) {
+		if (content[index] === "\n") lineNumber++;
 	}
-	return line;
+	return lineNumber;
 }
 
 export function parseMarkers(content: string): Result<Marker[], Error> {
@@ -109,7 +109,7 @@ export function replaceMarkerOccurrence({
 	const result = parseMarkers(content);
 	if (result.isErr()) return result as Result<never, Error>;
 	const all = result.unwrap();
-	const matches = all.filter((m) => m.name === name);
+	const matches = all.filter((marker) => marker.name === name);
 	if (matches.length === 0) {
 		return Result.err(new Error(`No marker "${name}" found.`));
 	}
@@ -118,21 +118,21 @@ export function replaceMarkerOccurrence({
 	if (occurrence === "all") {
 		targets = matches;
 	} else {
-		const idx = occurrence < 0 ? matches.length + occurrence : occurrence;
-		if (idx < 0 || idx >= matches.length) {
+		const targetIndex = occurrence < 0 ? matches.length + occurrence : occurrence;
+		if (targetIndex < 0 || targetIndex >= matches.length) {
 			return Result.err(
 				new Error(
 					`Occurrence ${occurrence} out of range for marker "${name}" (${matches.length} found).`,
 				),
 			);
 		}
-		targets = [matches[idx]];
+		targets = [matches[targetIndex]];
 	}
 
 	let next = content;
 	const sorted = [...targets].sort((a, b) => b.innerStart - a.innerStart);
-	for (const t of sorted) {
-		next = next.slice(0, t.innerStart) + `\n${html.trim()}\n` + next.slice(t.innerEnd);
+	for (const target of sorted) {
+		next = next.slice(0, target.innerStart) + `\n${html.trim()}\n` + next.slice(target.innerEnd);
 	}
 	return Result.ok({ content: next, replaced: targets.length });
 }

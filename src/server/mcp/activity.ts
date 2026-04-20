@@ -27,6 +27,7 @@ export type McpActivity = {
 	screenName?: string;
 	timestamp: string;
 	duration?: number;
+	isActive?: boolean;
 };
 
 type ActivityCallback = (activity: McpActivity) => void;
@@ -35,6 +36,30 @@ const MAX_HISTORY = 50;
 const activities: McpActivity[] = [];
 const listeners: Set<ActivityCallback> = new Set();
 let counter = 0;
+
+export function recordActivityStart(
+	action: McpAction,
+	screenName?: string,
+): McpActivity {
+	const activity: McpActivity = {
+		id: `${Date.now()}-${counter++}`,
+		action,
+		screenName,
+		timestamp: new Date().toISOString(),
+		isActive: true,
+	};
+
+	activities.unshift(activity);
+	if (activities.length > MAX_HISTORY) {
+		activities.length = MAX_HISTORY;
+	}
+
+	for (const listener of listeners) {
+		listener(activity);
+	}
+
+	return activity;
+}
 
 export function recordActivity(
 	action: McpAction,

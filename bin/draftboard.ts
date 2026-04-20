@@ -38,8 +38,8 @@ program
 		// that is exclusively the job of the `init_project` MCP tool).
 		const designDir = join(cwd, designDirName);
 		const screensDir = join(designDir, "screens");
-		for (const d of [designDir, screensDir]) {
-			if (!existsSync(d)) mkdirSync(d, { recursive: true });
+		for (const dir of [designDir, screensDir]) {
+			if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 		}
 
 		// Resolve port
@@ -61,7 +61,7 @@ program
   MCP:  http://localhost:${port}/mcp
 
   MCP config:
-  { "mcpServers": { "design": { "url": "http://localhost:${port}/mcp" } } }
+  { "mcpServers": { "draftboard": { "url": "http://localhost:${port}/mcp" } } }
 `);
 
 		if (opts.open) {

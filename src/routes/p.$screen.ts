@@ -5,7 +5,7 @@ export const Route = createFileRoute("/p/$screen")({
   server: {
     handlers: {
       GET: async ({ params }) => {
-        const html = generateLivePreviewHtml(params.screen);
+        const html = generateLivePreviewHtml({ screenName: params.screen });
         return new Response(html, {
           headers: { "Content-Type": "text/html" },
         });

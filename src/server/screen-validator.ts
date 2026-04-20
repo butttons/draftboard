@@ -45,9 +45,9 @@ const HREF_RE = /<a\s[^>]*href="([^"]+)"/gi;
 
 function buildAllowedSet(designMd: string): Set<string> {
 	const allowed = new Set<string>();
-	for (const m of designMd.matchAll(COLOR_CLASS_RE)) allowed.add(m[0]);
-	for (const m of designMd.matchAll(ARBITRARY_COLOR_RE)) allowed.add(m[0]);
-	for (const m of designMd.matchAll(HEX_RE)) allowed.add(m[0].toLowerCase());
+	for (const match of designMd.matchAll(COLOR_CLASS_RE)) allowed.add(match[0]);
+	for (const match of designMd.matchAll(ARBITRARY_COLOR_RE)) allowed.add(match[0]);
+	for (const match of designMd.matchAll(HEX_RE)) allowed.add(match[0].toLowerCase());
 	return allowed;
 }
 
@@ -58,11 +58,11 @@ function offsetToLine({
 	content: string;
 	offset: number;
 }): number {
-	let line = 1;
-	for (let i = 0; i < offset && i < content.length; i++) {
-		if (content[i] === "\n") line++;
+	let lineNumber = 1;
+	for (let index = 0; index < offset && index < content.length; index++) {
+		if (content[index] === "\n") lineNumber++;
 	}
-	return line;
+	return lineNumber;
 }
 
 export function validateScreen({
@@ -70,7 +70,7 @@ export function validateScreen({
 }: {
 	screenName: string;
 }): { issues: Issue[] } {
-	const screen = getScreen(screenName);
+	const screen = getScreen({ name: screenName });
 	if (!screen) {
 		return {
 			issues: [
@@ -87,9 +87,9 @@ export function validateScreen({
 
 	const markerResult = parseMarkers(html);
 	const markers = markerResult.match({
-		ok: (m) => m,
-		err: (e) => {
-			issues.push({ severity: "error", line: 1, message: e.message });
+		ok: (parsed) => parsed,
+		err: (error) => {
+			issues.push({ severity: "error", line: 1, message: error.message });
 			return null;
 		},
 	});
@@ -97,60 +97,60 @@ export function validateScreen({
 
 	const allowed = buildAllowedSet(getDesignMd());
 
-	for (const m of html.matchAll(COLOR_CLASS_RE)) {
-		if (!allowed.has(m[0])) {
+	for (const match of html.matchAll(COLOR_CLASS_RE)) {
+		if (!allowed.has(match[0])) {
 			issues.push({
 				severity: "warning",
-				line: offsetToLine({ content: html, offset: m.index ?? 0 }),
-				message: `Color class "${m[0]}" is not in design.md palette.`,
+				line: offsetToLine({ content: html, offset: match.index ?? 0 }),
+				message: `Color class "${match[0]}" is not in design.md palette.`,
 			});
 		}
 	}
-	for (const m of html.matchAll(HEX_RE)) {
-		if (!allowed.has(m[0].toLowerCase())) {
+	for (const match of html.matchAll(HEX_RE)) {
+		if (!allowed.has(match[0].toLowerCase())) {
 			issues.push({
 				severity: "warning",
-				line: offsetToLine({ content: html, offset: m.index ?? 0 }),
-				message: `Hex color "${m[0]}" is not in design.md palette.`,
+				line: offsetToLine({ content: html, offset: match.index ?? 0 }),
+				message: `Hex color "${match[0]}" is not in design.md palette.`,
 			});
 		}
 	}
 
-	const componentNames = new Set(listComponents().map((c) => c.name));
-	for (const m of markers) {
-		if (!componentNames.has(m.name)) {
+	const componentNames = new Set(listComponents().map((comp) => comp.name));
+	for (const marker of markers) {
+		if (!componentNames.has(marker.name)) {
 			issues.push({
 				severity: "info",
-				line: m.startLine,
-				message: `Marker "${m.name}" has no matching entry in components.html (may be a one-off page-layout marker).`,
-				marker: m.name,
+				line: marker.startLine,
+				message: `Marker "${marker.name}" has no matching entry in components.html (may be a one-off page-layout marker).`,
+				marker: marker.name,
 			});
 		}
 	}
 
-	const markerRanges = markers.map((m) => [m.outerStart, m.outerEnd] as const);
+	const markerRanges = markers.map((marker) => [marker.outerStart, marker.outerEnd] as const);
 	const isInsideMarker = (offset: number): boolean =>
-		markerRanges.some(([s, e]) => offset >= s && offset < e);
+		markerRanges.some(([start, end]) => offset >= start && offset < end);
 
-	for (const m of html.matchAll(COMPONENT_TAG_RE)) {
-		const offset = m.index ?? 0;
+	for (const match of html.matchAll(COMPONENT_TAG_RE)) {
+		const offset = match.index ?? 0;
 		if (!isInsideMarker(offset)) {
 			issues.push({
 				severity: "warning",
 				line: offsetToLine({ content: html, offset }),
-				message: `<${m[1]}> is not wrapped in a component marker.`,
+				message: `<${match[1]}> is not wrapped in a component marker.`,
 			});
 		}
 	}
 
-	const existingScreens = new Set(listScreens().map((s) => s.name));
-	for (const m of html.matchAll(HREF_RE)) {
-		const href = m[1];
+	const existingScreens = new Set(listScreens().map((screenItem) => screenItem.name));
+	for (const match of html.matchAll(HREF_RE)) {
+		const href = match[1];
 		const previewMatch = href.match(/^\/p\/([a-z0-9-]+)\/?$/);
 		if (previewMatch && !existingScreens.has(previewMatch[1])) {
 			issues.push({
 				severity: "error",
-				line: offsetToLine({ content: html, offset: m.index ?? 0 }),
+				line: offsetToLine({ content: html, offset: match.index ?? 0 }),
 				message: `Dead link to screen "${previewMatch[1]}".`,
 			});
 		}
@@ -162,8 +162,8 @@ export function validateScreen({
 
 export function validateAllScreens(): Record<string, Issue[]> {
 	const result: Record<string, Issue[]> = {};
-	for (const s of listScreens()) {
-		result[s.name] = validateScreen({ screenName: s.name }).issues;
+	for (const screen of listScreens()) {
+		result[screen.name] = validateScreen({ screenName: screen.name }).issues;
 	}
 	return result;
 }
@@ -174,13 +174,13 @@ export function findScreensUsing({
 	markerName: string;
 }): { screen_name: string; occurrences: number }[] {
 	const hits: { screen_name: string; occurrences: number }[] = [];
-	const re = new RegExp(`<!--\\s+${markerName}:start\\b`, "g");
-	for (const s of listScreens()) {
-		const screen = getScreen(s.name);
-		if (!screen) continue;
-		const matches = screen.html.match(re);
+	const markerRe = new RegExp(`<!--\\s+${markerName}:start\\b`, "g");
+	for (const screen of listScreens()) {
+		const screenData = getScreen({ name: screen.name });
+		if (!screenData) continue;
+		const matches = screenData.html.match(markerRe);
 		if (matches && matches.length > 0) {
-			hits.push({ screen_name: s.name, occurrences: matches.length });
+			hits.push({ screen_name: screen.name, occurrences: matches.length });
 		}
 	}
 	return hits;
@@ -192,17 +192,17 @@ export function findScreensLinkingTo({
 	screenName: string;
 }): { screen_name: string; occurrences: number }[] {
 	const hits: { screen_name: string; occurrences: number }[] = [];
-	const re = new RegExp(
+	const linkRe = new RegExp(
 		`href="(?:/p/)?${screenName.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}/?"`,
 		"g",
 	);
-	for (const s of listScreens()) {
-		if (s.name === screenName) continue;
-		const screen = getScreen(s.name);
-		if (!screen) continue;
-		const matches = screen.html.match(re);
+	for (const screen of listScreens()) {
+		if (screen.name === screenName) continue;
+		const screenData = getScreen({ name: screen.name });
+		if (!screenData) continue;
+		const matches = screenData.html.match(linkRe);
 		if (matches && matches.length > 0) {
-			hits.push({ screen_name: s.name, occurrences: matches.length });
+			hits.push({ screen_name: screen.name, occurrences: matches.length });
 		}
 	}
 	return hits;

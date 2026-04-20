@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap,
@@ -77,6 +78,30 @@ const actionLabels: Record<McpAction, string> = {
   rename_screen: "Renamed screen",
 };
 
+const actionProgressLabels: Record<McpAction, string> = {
+  init_project: "Initializing project...",
+  list_screens: "Listing screens...",
+  get_screen: "Reading screen...",
+  create_screen: "Creating screen...",
+  update_screen: "Updating screen...",
+  delete_screen: "Deleting screen...",
+  get_conventions: "Reading conventions...",
+  list_components: "Listing components...",
+  get_component: "Reading component...",
+  get_design_doc: "Reading design doc...",
+  update_design_doc: "Updating design doc...",
+  update_layout: "Updating layout...",
+  upsert_component: "Upserting component...",
+  delete_component: "Deleting component...",
+  list_markers_in_screen: "Listing markers...",
+  replace_component_in_screen: "Replacing marker...",
+  validate_screen: "Validating screen...",
+  validate_all_screens: "Validating all screens...",
+  find_screens_using: "Finding usages...",
+  find_screens_linking_to: "Finding links...",
+  rename_screen: "Renaming screen...",
+};
+
 function formatTime(iso: string): string {
   const diffSec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (diffSec < 5) return "just now";
@@ -120,43 +145,96 @@ function ActivityItem({ activity }: { activity: McpActivity }) {
   );
 }
 
+function ActiveTooltip({ activity }: { activity: McpActivity }) {
+  const progressLabel =
+    actionProgressLabels[activity.action] || `${activity.action}...`;
+  const Icon = actionIcons[activity.action] || Zap;
+
+  return (
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-50 animate-in fade-in slide-in-from-bottom-1 duration-150">
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 text-white text-xs font-medium whitespace-nowrap shadow-lg">
+        <Icon size={12} className="text-emerald-400" />
+        <span>{progressLabel}</span>
+        {activity.screenName && (
+          <span className="text-zinc-400 font-mono">
+            {activity.screenName}
+          </span>
+        )}
+      </div>
+      <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-zinc-900 rotate-45 -mt-1" />
+    </div>
+  );
+}
+
 export default function McpStatusBadge() {
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const { data: activities = [] } = useQuery({
     queryKey: ["mcpActivities"],
     queryFn: fetchMcpActivities,
     staleTime: 30_000,
   });
 
+  const latestActivity = activities[0];
+  const isActive = latestActivity?.isActive === true;
   const hasRecent =
-    activities.length > 0 &&
-    Date.now() - new Date(activities[0].timestamp).getTime() < 5000;
+    !isActive &&
+    latestActivity !== undefined &&
+    Date.now() - new Date(latestActivity.timestamp).getTime() < 5000;
 
   return (
     <Drawer direction="right">
-      <DrawerTrigger
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-          hasRecent
-            ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-            : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-        }`}
+      <div
+        className="relative"
+        onMouseEnter={() => setIsTooltipVisible(true)}
+        onMouseLeave={() => setIsTooltipVisible(false)}
       >
-        <Zap
-          size={12}
-          className={hasRecent ? "text-emerald-500" : "text-zinc-400"}
-        />
-        <span>MCP</span>
-        {hasRecent && (
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-          </span>
+        {isActive && isTooltipVisible && (
+          <ActiveTooltip activity={latestActivity} />
         )}
-      </DrawerTrigger>
+        <DrawerTrigger
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition relative ${
+            isActive
+              ? "bg-blue-50 text-blue-700 ring-2 ring-blue-300 animate-mcp-pulse"
+              : hasRecent
+                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+          }`}
+        >
+          <Zap
+            size={12}
+            className={
+              isActive
+                ? "text-blue-500"
+                : hasRecent
+                  ? "text-emerald-500"
+                  : "text-zinc-400"
+            }
+          />
+          <span>MCP</span>
+          {isActive && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+            </span>
+          )}
+          {hasRecent && !isActive && (
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+          )}
+        </DrawerTrigger>
+      </div>
       <DrawerContent overlayClassName="supports-backdrop-filter:backdrop-blur-none bg-transparent">
         <DrawerHeader className="border-b border-zinc-100">
           <DrawerTitle className="flex items-center gap-2 text-sm">
             <Zap size={14} className="text-zinc-500" />
             MCP Activity
+            {isActive && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium animate-pulse">
+                Active
+              </span>
+            )}
           </DrawerTitle>
         </DrawerHeader>
 

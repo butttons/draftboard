@@ -1,5 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import z from "zod";
+import { writeFileSync } from "node:fs";
+import packageJson from "../../../package.json";
 import {
 	listScreens,
 	getScreen,
@@ -22,9 +24,8 @@ import {
 	findScreensUsing,
 	findScreensLinkingTo,
 } from "../screen-validator";
-import { writeFileSync } from "node:fs";
 import { validateScreenName } from "../validation";
-import { recordActivity, type McpAction } from "./activity";
+import { recordActivity, recordActivityStart, type McpAction } from "./activity";
 import {
 	listComponents,
 	getComponent,
@@ -40,10 +41,11 @@ function tracked<TArgs extends ToolArgs, R>(
 	fn: (args: TArgs) => R,
 ): (args: TArgs) => R {
 	return (args: TArgs): R => {
+		const screenName = typeof args.name === "string" ? args.name : undefined;
+		recordActivityStart(action, screenName);
 		const start = Date.now();
 		const result = fn(args);
 		const duration = Date.now() - start;
-		const screenName = typeof args.name === "string" ? args.name : undefined;
 		recordActivity(action, screenName, duration);
 		return result;
 	};
@@ -52,7 +54,7 @@ function tracked<TArgs extends ToolArgs, R>(
 export function createMcpServer(): McpServer {
 	const server = new McpServer({
 		name: "@butttons/draftboard",
-		version: "1.0.0",
+		version: packageJson.version,
 	});
 
 	server.registerTool(
@@ -75,7 +77,9 @@ export function createMcpServer(): McpServer {
 				};
 			}
 			const result = scaffoldDesignDir();
-			const createdList = result.created.length > 0 ? result.created.join(", ") : "nothing (defaults already present)";
+			const createdList = result.created.length > 0
+				? result.created.join(", ")
+				: "nothing (defaults already present)";
 			return {
 				content: [
 					{
@@ -131,7 +135,7 @@ export function createMcpServer(): McpServer {
 		},
 		tracked("get_screen", ({ name, start, end }) => {
 			if (start !== undefined || end !== undefined) {
-				const screen = getScreen(name);
+				const screen = getScreen({ name });
 				if (!screen) {
 					return {
 						content: [{ type: "text", text: `Screen "${name}" not found.` }],
@@ -140,9 +144,9 @@ export function createMcpServer(): McpServer {
 				}
 				const lines = screen.html.split("\n");
 				const total = lines.length;
-				const s = start ?? 1;
-				const e = end ?? total;
-				const sliced = lines.slice(s - 1, e);
+				const startLine = start ?? 1;
+				const endLine = end ?? total;
+				const sliced = lines.slice(startLine - 1, endLine);
 				return {
 					content: [
 						{
@@ -150,15 +154,15 @@ export function createMcpServer(): McpServer {
 							text: JSON.stringify({
 								name,
 								lines: sliced,
-								start: s,
-								end: Math.min(e, total),
+								start: startLine,
+								end: Math.min(endLine, total),
 								total,
 							}),
 						},
 					],
 				};
 			}
-			const screen = getScreen(name);
+			const screen = getScreen({ name });
 			if (!screen) {
 				return {
 					content: [{ type: "text", text: `Screen "${name}" not found.` }],
@@ -200,19 +204,22 @@ export function createMcpServer(): McpServer {
 			if (markerCheck.isErr()) {
 				return {
 					content: [
-						{ type: "text", text: `Marker error: ${markerCheck.match({ ok: () => "", err: (e) => e.message })}` },
+						{
+							type: "text",
+							text: `Marker error: ${markerCheck.match({ ok: () => "", err: (error) => error.message })}`,
+						},
 					],
 					isError: true,
 				};
 			}
-			return createScreen(name, html).match({
+			return createScreen({ name, html }).match({
 				ok: () => ({
 					content: [
 						{ type: "text" as const, text: `Screen "${name}" created.` },
 					],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -252,7 +259,7 @@ export function createMcpServer(): McpServer {
 		},
 		tracked("update_screen", ({ name, html, start, end }) => {
 			if (start !== undefined || end !== undefined) {
-				const screen = getScreen(name);
+				const screen = getScreen({ name });
 				if (!screen) {
 					return {
 						content: [{ type: "text", text: `Screen "${name}" not found.` }],
@@ -261,54 +268,55 @@ export function createMcpServer(): McpServer {
 				}
 				const lines = screen.html.split("\n");
 				const total = lines.length;
-				const s = start ?? 1;
-				const e = end ?? total;
-				if (s < 1)
+				const startLine = start ?? 1;
+				const endLine = end ?? total;
+				if (startLine < 1)
 					return {
 						content: [{ type: "text", text: "Start line must be >= 1." }],
 						isError: true,
 					};
-				if (e < s)
+				if (endLine < startLine)
 					return {
 						content: [{ type: "text", text: "End line must be >= start." }],
 						isError: true,
 					};
-				if (s > total)
+				if (startLine > total)
 					return {
 						content: [
 							{
 								type: "text",
-								text: `Start line ${s} exceeds file length (${total}).`,
+								text: `Start line ${startLine} exceeds file length (${total}).`,
 							},
 						],
 						isError: true,
 					};
-				const clampedEnd = Math.min(e, total);
-				const before = lines.slice(0, s - 1);
+				const clampedEnd = Math.min(endLine, total);
+				const before = lines.slice(0, startLine - 1);
 				const after = lines.slice(clampedEnd);
-				const newContent = [...before, ...html.split("\n"), ...after].join(
-					"\n",
-				);
+				const newContent = [...before, ...html.split("\n"), ...after].join("\n");
 				const partialCheck = parseMarkers(newContent);
 				if (partialCheck.isErr()) {
 					return {
 						content: [
-							{ type: "text", text: `Marker error: ${partialCheck.match({ ok: () => "", err: (e) => e.message })}` },
+							{
+								type: "text",
+								text: `Marker error: ${partialCheck.match({ ok: () => "", err: (error) => error.message })}`,
+							},
 						],
 						isError: true,
 					};
 				}
-				return updateScreen(name, newContent).match({
+				return updateScreen({ name, html: newContent }).match({
 					ok: () => ({
 						content: [
 							{
 								type: "text" as const,
-								text: `Lines ${s}-${clampedEnd} updated in "${name}".`,
+								text: `Lines ${startLine}-${clampedEnd} updated in "${name}".`,
 							},
 						],
 					}),
-					err: (err) => ({
-						content: [{ type: "text" as const, text: err.message }],
+					err: (error) => ({
+						content: [{ type: "text" as const, text: error.message }],
 						isError: true,
 					}),
 				});
@@ -317,19 +325,22 @@ export function createMcpServer(): McpServer {
 			if (fullCheck.isErr()) {
 				return {
 					content: [
-						{ type: "text", text: `Marker error: ${fullCheck.match({ ok: () => "", err: (e) => e.message })}` },
+						{
+							type: "text",
+							text: `Marker error: ${fullCheck.match({ ok: () => "", err: (error) => error.message })}`,
+						},
 					],
 					isError: true,
 				};
 			}
-			return updateScreen(name, html).match({
+			return updateScreen({ name, html }).match({
 				ok: () => ({
 					content: [
 						{ type: "text" as const, text: `Screen "${name}" updated.` },
 					],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -346,14 +357,14 @@ export function createMcpServer(): McpServer {
 			},
 		},
 		tracked("delete_screen", ({ name }) => {
-			return deleteScreen(name).match({
+			return deleteScreen({ name }).match({
 				ok: () => ({
 					content: [
 						{ type: "text" as const, text: `Screen "${name}" deleted.` },
 					],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -388,11 +399,11 @@ export function createMcpServer(): McpServer {
 		},
 		tracked("list_components", () => {
 			const components = listComponents();
-			const summary = components.map((c) => ({
-				name: c.name,
-				variant: c.variant,
-				props: c.props,
-				slots: c.slots,
+			const summary = components.map((component) => ({
+				name: component.name,
+				variant: component.variant,
+				props: component.props,
+				slots: component.slots,
 			}));
 			return {
 				content: [
@@ -426,10 +437,10 @@ export function createMcpServer(): McpServer {
 			},
 		},
 		tracked("get_component", ({ name, variant }) => {
-			const component = getComponent(name, variant);
+			const component = getComponent({ name, variant });
 			if (!component) {
 				const available = listComponents()
-					.map((c) => (c.variant ? `${c.name}:${c.variant}` : c.name))
+					.map((comp) => (comp.variant ? `${comp.name}:${comp.variant}` : comp.name))
 					.join(", ");
 				return {
 					content: [
@@ -444,8 +455,12 @@ export function createMcpServer(): McpServer {
 			const label = component.variant
 				? `${component.name}:${component.variant}`
 				: component.name;
-			const propsLine = component.props.length > 0 ? `\nProps: ${component.props.join(", ")}` : "";
-			const slotsLine = component.slots.length > 0 ? `\nSlots: ${component.slots.join(", ")}` : "";
+			const propsLine = component.props.length > 0
+				? `\nProps: ${component.props.join(", ")}`
+				: "";
+			const slotsLine = component.slots.length > 0
+				? `\nSlots: ${component.slots.join(", ")}`
+				: "";
 			const result = `Component: ${label}${propsLine}${slotsLine}\n\nHTML:\n${component.html}`;
 			return {
 				content: [{ type: "text", text: result }],
@@ -488,12 +503,12 @@ export function createMcpServer(): McpServer {
 					isError: true,
 				};
 			}
-			return writeDesignMd(content).match({
+			return writeDesignMd({ content }).match({
 				ok: () => ({
 					content: [{ type: "text" as const, text: "design.md updated." }],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -521,12 +536,12 @@ export function createMcpServer(): McpServer {
 					isError: true,
 				};
 			}
-			return writeLayoutHtml(content).match({
+			return writeLayoutHtml({ content }).match({
 				ok: () => ({
 					content: [{ type: "text" as const, text: "layout.html updated." }],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -578,8 +593,9 @@ export function createMcpServer(): McpServer {
 			}).match({
 				ok: ({ created, warnings }) => {
 					const label = variant ? `${name}:${variant}` : name;
-					const warnText =
-						warnings.length > 0 ? `\nWarnings:\n- ${warnings.join("\n- ")}` : "";
+					const warnText = warnings.length > 0
+						? `\nWarnings:\n- ${warnings.join("\n- ")}`
+						: "";
 					return {
 						content: [
 							{
@@ -589,8 +605,8 @@ export function createMcpServer(): McpServer {
 						],
 					};
 				},
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -618,8 +634,8 @@ export function createMcpServer(): McpServer {
 						},
 					],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -637,7 +653,7 @@ export function createMcpServer(): McpServer {
 			},
 		},
 		tracked("list_markers_in_screen", ({ name }) => {
-			const screen = getScreen(name);
+			const screen = getScreen({ name });
 			if (!screen) {
 				return {
 					content: [{ type: "text" as const, text: `Screen "${name}" not found.` }],
@@ -650,11 +666,11 @@ export function createMcpServer(): McpServer {
 						{
 							type: "text" as const,
 							text: JSON.stringify(
-								markers.map((m) => ({
-									name: m.name,
-									props: m.props,
-									start_line: m.startLine,
-									end_line: m.endLine,
+								markers.map((marker) => ({
+									name: marker.name,
+									props: marker.props,
+									start_line: marker.startLine,
+									end_line: marker.endLine,
 								})),
 								null,
 								2,
@@ -662,8 +678,8 @@ export function createMcpServer(): McpServer {
 						},
 					],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -689,7 +705,7 @@ export function createMcpServer(): McpServer {
 			},
 		},
 		tracked("replace_component_in_screen", ({ screen_name, marker_name, occurrence, html }) => {
-			const screen = getScreen(screen_name);
+			const screen = getScreen({ name: screen_name });
 			if (!screen) {
 				return {
 					content: [
@@ -698,22 +714,22 @@ export function createMcpServer(): McpServer {
 					isError: true,
 				};
 			}
-			const occ = occurrence ?? 0;
+			const targetOccurrence = occurrence ?? 0;
 			return replaceMarkerOccurrence({
 				content: screen.html,
 				name: marker_name,
-				occurrence: occ,
+				occurrence: targetOccurrence,
 				html,
 			}).match({
 				ok: ({ content, replaced }) => {
 					try {
-						writeFileSync(getScreenFilePath(screen_name), content);
-					} catch (e) {
+						writeFileSync(getScreenFilePath({ name: screen_name }), content);
+					} catch (error) {
 						return {
 							content: [
 								{
 									type: "text" as const,
-									text: e instanceof Error ? e.message : String(e),
+									text: error instanceof Error ? error.message : String(error),
 								},
 							],
 							isError: true,
@@ -728,8 +744,8 @@ export function createMcpServer(): McpServer {
 						],
 					};
 				},
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
@@ -830,8 +846,8 @@ export function createMcpServer(): McpServer {
 				ok: (result) => ({
 					content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
 				}),
-				err: (e) => ({
-					content: [{ type: "text" as const, text: e.message }],
+				err: (error) => ({
+					content: [{ type: "text" as const, text: error.message }],
 					isError: true,
 				}),
 			});
