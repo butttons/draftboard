@@ -99,6 +99,58 @@ The server exposes an MCP endpoint at `/mcp`. Tools fall into five groups:
 
 Screen names are kebab-case, no path separators. Component names accept dashes (`info-card`).
 
+### Connecting agents
+
+#### Claude Code
+
+```bash
+claude mcp add --transport http draftboard http://localhost:4321/mcp
+```
+
+Manage servers: `claude mcp list`, `claude mcp remove draftboard`
+
+#### OpenCode
+
+```bash
+opencode mcp add
+```
+
+Or add to `~/.opencode/config.json`:
+
+```json
+{
+  "mcp": {
+    "draftboard": {
+      "type": "remote",
+      "url": "http://localhost:4321/mcp",
+      "enabled": true
+    }
+  }
+}
+```
+
+#### Pi
+
+Draftboard ships with a pi extension that registers all MCP tools automatically:
+
+```bash
+pi install git:github.com/butttons/draftboard
+```
+
+Or drop `.pi/extensions/draftboard.ts` into your project. The extension auto-detects the running draftboard server.
+
+#### Raw MCP config
+
+```json
+{
+  "mcpServers": {
+    "draftboard": {
+      "url": "http://localhost:4321/mcp"
+    }
+  }
+}
+```
+
 ## Stack
 
 TanStack Start + React, Node.js runtime, Commander for CLI, Monaco editor, chokidar for file watching, `@modelcontextprotocol/sdk` for MCP, Tailwind for styling.

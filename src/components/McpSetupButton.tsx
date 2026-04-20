@@ -62,13 +62,22 @@ export default function McpSetupButton() {
 
         <Tabs defaultValue="claude">
           <TabsList className="w-full rounded-none border-b border-zinc-100 bg-transparent p-0">
-            <TabsTrigger value="claude" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900">
+            <TabsTrigger
+              value="claude"
+              className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900"
+            >
               Claude Code
             </TabsTrigger>
-            <TabsTrigger value="opencode" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900">
+            <TabsTrigger
+              value="opencode"
+              className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900"
+            >
               OpenCode
             </TabsTrigger>
-            <TabsTrigger value="json" className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900">
+            <TabsTrigger
+              value="json"
+              className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-zinc-900 data-[state=active]:bg-transparent data-[state=active]:shadow-none text-zinc-400 data-[state=active]:text-zinc-900"
+            >
               JSON
             </TabsTrigger>
           </TabsList>
@@ -88,7 +97,11 @@ export default function McpSetupButton() {
                   onClick={() => copy(claudeCmd, "claude")}
                   className="absolute top-2 right-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
                 >
-                  {copied === "claude" ? <Check size={12} /> : <Copy size={12} />}
+                  {copied === "claude" ? (
+                    <Check size={12} />
+                  ) : (
+                    <Copy size={12} />
+                  )}
                 </Button>
               </div>
             </div>
@@ -105,8 +118,13 @@ export default function McpSetupButton() {
 
           <TabsContent value="opencode" className="p-4 space-y-4 mt-0">
             <div>
-              <p className="text-xs text-zinc-500 mb-2">
-                Add to <code className="text-zinc-700">~/.opencode/config.json</code>:
+              <p className="text-xs text-zinc-500 mb-2">Run:</p>
+              <pre className="text-xs bg-zinc-950 text-zinc-100 p-3 rounded-lg overflow-x-auto whitespace-pre-wrap break-all">
+                opencode mcp add
+              </pre>
+              <p className="text-xs mt-2 text-zinc-500 mb-2">
+                Or add to{" "}
+                <code className="text-zinc-700">~/.opencode/config.json</code>:
               </p>
               <div className="relative">
                 <pre className="text-xs bg-zinc-950 text-zinc-100 p-3 rounded-lg overflow-x-auto">
@@ -118,7 +136,11 @@ export default function McpSetupButton() {
                   onClick={() => copy(opencodeConfig, "opencode")}
                   className="absolute top-2 right-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
                 >
-                  {copied === "opencode" ? <Check size={12} /> : <Copy size={12} />}
+                  {copied === "opencode" ? (
+                    <Check size={12} />
+                  ) : (
+                    <Copy size={12} />
+                  )}
                 </Button>
               </div>
             </div>
