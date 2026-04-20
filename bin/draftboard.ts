@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { execSync } from "node:child_process";
 import { Command } from "commander";
@@ -42,6 +42,13 @@ program
 			if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 		}
 
+		// Resolve port file path for extension discovery
+		const portFile = join(designDir, ".port");
+		const cleanup = () => { try { unlinkSync(portFile); } catch { /* */ } };
+		process.on("exit", cleanup);
+		process.on("SIGINT", () => { cleanup(); process.exit(); });
+		process.on("SIGTERM", () => { cleanup(); process.exit(); });
+
 		// Resolve port
 		const requestedPort = Number.parseInt(
 			opts.port ?? process.env.PORT ?? process.env.NITRO_PORT ?? "",
@@ -54,14 +61,17 @@ program
 		process.env.PORT = String(port);
 		process.env.NITRO_PORT = String(port);
 
+		const mcpUrl = `http://localhost:${port}/mcp`;
+		writeFileSync(portFile, mcpUrl);
+
 		console.log(`
   @butttons/draftboard
 
   App:  http://localhost:${port}
-  MCP:  http://localhost:${port}/mcp
+  MCP:  ${mcpUrl}
 
   MCP config:
-  { "mcpServers": { "draftboard": { "url": "http://localhost:${port}/mcp" } } }
+  { "mcpServers": { "draftboard": { "url": "${mcpUrl}" } } }
 `);
 
 		if (opts.open) {
